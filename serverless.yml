@@ -1,0 +1,55 @@
+service:
+  name: yyt-lobby
+
+plugins:
+  - serverless-webpack
+  - serverless-prune-plugin
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: ap-northeast-2
+  stage: ${env:STAGE}
+  tracing:
+    apiGateway: true
+    lambda: true
+  environment:
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    REDIS_HOST: ${env:REDIS_HOST}
+    REDIS_PASSWORD: ${env:REDIS_PASSWORD}
+    WS_ENDPOINT: ${env:WS_ENDPOINT}
+    JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
+  apiGateway:
+    minimumCompressionSize: 1024
+
+custom:
+  prune:
+    automatic: true
+    number: 7
+
+package:
+  individually: true
+
+functions:
+  connect:
+    handler: src/connect.handle
+    timeout: 3
+    memorySize: 256
+    events:
+      - websocket:
+          route: $connect
+  disconnect:
+    handler: src/disconnect.handle
+    timeout: 3
+    memorySize: 256
+    events:
+      - websocket:
+          route: $disconnect
+  message:
+    handler: src/message.handle
+    timeout: 3
+    memorySize: 256
+    events:
+      - websocket:
+          route: $default

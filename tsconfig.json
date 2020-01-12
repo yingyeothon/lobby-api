@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "lib": ["es2017"],
+    "moduleResolution": "node",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es2017",
+    "outDir": "lib",
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "resolveJsonModule": true
+  },
+  "exclude": ["node_modules"]
+}

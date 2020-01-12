@@ -1,0 +1,10 @@
+import IApplication from "../model/application";
+
+const applications: IApplication[] = [
+  {
+    id: "game-application-id",
+    url: "wss://your-game-server-address/"
+  }
+];
+
+export default applications;

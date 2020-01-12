@@ -1,0 +1,20 @@
+# package directories
+node_modules
+jspm_packages
+
+# Serverless directories
+.serverless
+
+# Webpack directories
+.webpack
+
+# HTML bundle
+html-bundle.zip
+
+# Environment secrets
+.envrc
+
+*.log
+
+# Data file
+src/data/applications.ts
