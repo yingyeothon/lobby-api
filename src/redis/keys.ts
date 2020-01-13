@@ -4,6 +4,6 @@ export default {
   user: (connectionId: string) => `${keyPrefix}/user/${connectionId}`,
   matchingPool: (applicationId: string) =>
     `${keyPrefix}/matchingPool/${applicationId}`,
-  chatingPool: (applicationId: string) =>
-    `${keyPrefix}/chatingPool/${applicationId}`
+  matchingTime: (applicationId: string, connectionId: string) =>
+    `${keyPrefix}/matchingTime/${applicationId}/${connectionId}`
 };

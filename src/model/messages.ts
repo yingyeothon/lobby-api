@@ -7,18 +7,8 @@ export interface ILobbyMatchResponse {
   type: "match";
   url: string;
   gameId: string;
+  playerId: string;
 }
 
-export interface ILobbyChatRequest {
-  type: "chat";
-  application: string;
-  text: string;
-}
-
-export interface ILobbyChatResponse {
-  type: "chat";
-  text: string;
-}
-
-export type LobbyRequest = ILobbyMatchRequest | ILobbyChatRequest;
-export type LobbyResponse = ILobbyMatchResponse | ILobbyChatResponse;
+export type LobbyRequest = ILobbyMatchRequest;
+export type LobbyResponse = ILobbyMatchResponse;

@@ -3,4 +3,7 @@ export default interface IApplication {
   url: string;
   functionName: string;
   memberCount: number;
+
+  incompletedMatchingWaitMillis?: number;
+  maxWaitingMillis?: number;
 }

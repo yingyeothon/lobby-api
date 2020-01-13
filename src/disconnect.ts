@@ -1,65 +1,34 @@
-import { ConsoleLogger } from "@yingyeothon/logger";
-import redisConnect from "@yingyeothon/naive-redis/lib/connection";
-import redisDel from "@yingyeothon/naive-redis/lib/del";
-import redisGet from "@yingyeothon/naive-redis/lib/get";
-import redisSrem from "@yingyeothon/naive-redis/lib/srem";
 import { APIGatewayProxyHandler } from "aws-lambda";
-import env from "./model/env";
-import redisKeys from "./model/redisKeys";
+import logger from "./logger";
+import deregisterFromPool from "./match/deregisterFromPool";
 import responses from "./model/responses";
-import IUser from "./model/user";
+import deleteUser from "./redis/user/deleteUser";
+import getUser from "./redis/user/getUser";
+import useRedis from "./redis/useRedis";
 
 export const handle: APIGatewayProxyHandler = async event => {
-  const logger = new ConsoleLogger(`debug`);
-  const connectionId = event.requestContext.connectionId;
-  if (!connectionId) {
+  const { connectionId } = event.requestContext;
+  if (connectionId === undefined) {
     logger.debug(`No connectionId`);
     return responses.BadRequest;
   }
 
-  logger.info(`Clear user context`, connectionId);
+  logger.info(`Start to clear user context`, connectionId);
 
-  const redisConnection = redisConnect({
-    host: env.redisHost,
-    password: env.redisPassword
+  useRedis(async redisConnection => {
+    const user = await getUser(redisConnection, connectionId);
+    if (user === null) {
+      return;
+    }
+    try {
+      const deleted = await Promise.all([
+        deregisterFromPool(user, redisConnection),
+        deleteUser(redisConnection, connectionId)
+      ]);
+      logger.info(`Clear user`, user, `redisResponse`, deleted);
+    } catch (error) {
+      logger.error(`User`, connectionId, `redisError`, error);
+    }
   });
-  try {
-    const serializedUser = await redisGet(
-      redisConnection,
-      redisKeys.user(connectionId)
-    );
-    if (!serializedUser) {
-      logger.info(`Already deleted`, connectionId);
-      return responses.OK;
-    }
-
-    const user = JSON.parse(serializedUser) as IUser;
-    if (
-      !user.connectionId ||
-      !user.applications ||
-      user.applications.length === 0
-    ) {
-      logger.info(`Delete invalid user context`, connectionId, user);
-      await redisDel(redisConnection, redisKeys.user(connectionId));
-      return responses.OK;
-    }
-
-    const deleted = await Promise.all([
-      redisDel(redisConnection, redisKeys.user(connectionId)),
-      ...user.applications.map(appId =>
-        redisSrem(redisConnection, redisKeys.chatingPool(appId), connectionId)
-      ),
-      ...user.applications.map(appId =>
-        redisSrem(redisConnection, redisKeys.matchingPool(appId), connectionId)
-      )
-    ]);
-    logger.info(`Clear user`, user, `redisResponse`, deleted);
-  } catch (error) {
-    logger.error(`User`, connectionId, `redisError`, error);
-    return responses.OK;
-  } finally {
-    redisConnection.socket.disconnect();
-  }
-
   return responses.OK;
 };
