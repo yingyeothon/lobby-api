@@ -4,6 +4,7 @@
   "description": "A simple Serverless backend for lobby",
   "main": "src/handler.ts",
   "scripts": {
+    "start": "sls offline",
     "build": "node --max-old-space-size=4096 node_modules/serverless/bin/serverless package",
     "deploy": "node --max-old-space-size=4096 node_modules/serverless/bin/serverless deploy"
   },
