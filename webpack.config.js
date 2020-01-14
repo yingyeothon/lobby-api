@@ -1,5 +1,6 @@
 const path = require("path");
 const slsw = require("serverless-webpack");
+// const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 module.exports = {
   mode: slsw.lib.webpack.isLocal ? "development" : "production",
@@ -18,4 +19,5 @@ module.exports = {
   module: {
     rules: [{ test: /\.tsx?$/, loader: "ts-loader" }]
   }
+  // plugins: [new BundleAnalyzerPlugin()]
 };
