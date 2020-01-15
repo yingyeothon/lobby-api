@@ -6,8 +6,8 @@ import queueFlush from "@yingyeothon/actor-system-redis-support/lib/queue/flush"
 import queuePush from "@yingyeothon/actor-system-redis-support/lib/queue/push";
 import queueSize from "@yingyeothon/actor-system-redis-support/lib/queue/size";
 import mem from "mem";
-import getRedis from "./getRedis";
-import logger from "./logger";
+import getRedis from "../getRedis";
+import logger from "../logger";
 
 function newActorSubsys() {
   const connection = getRedis();
