@@ -1,4 +1,5 @@
 import { bulkConsumer } from "@yingyeothon/actor-system/lib/actor/env/consumeType";
+import { ActorSendEnvironment } from "@yingyeothon/actor-system/lib/actor/send";
 import redisDel from "@yingyeothon/naive-redis/lib/del";
 import redisGet from "@yingyeothon/naive-redis/lib/get";
 import redisSmembers from "@yingyeothon/naive-redis/lib/smembers";
@@ -11,7 +12,7 @@ import getRedis from "../getRedis";
 import processMessage from "./processMessage";
 import getSubsys from "./subsys";
 
-function newActor(id: string) {
+function newActor(id: string): ActorSendEnvironment<{}> {
   const redis = getRedis();
   const subsys = getSubsys();
   return {
