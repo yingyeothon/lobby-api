@@ -1,15 +1,20 @@
-import { IRedisConnection } from "@yingyeothon/naive-redis/lib/connection";
-import redisSadd from "@yingyeothon/naive-redis/lib/sadd";
-import redisSet from "@yingyeothon/naive-redis/lib/set";
 import IUser from "../model/user";
 import redisKeys from "../redis/keys";
 import logger from "./logger";
 
-export default async function registerToPool(
-  user: IUser,
-  redisConnection: IRedisConnection,
-  applicationId: string
-) {
+interface IRegisterEnvironment {
+  user: IUser;
+  applicationId: string;
+  sadd: (key: string, value: string) => Promise<any>;
+  set: (key: string, value: string) => Promise<any>;
+}
+
+export default async function registerToPool({
+  user,
+  applicationId,
+  sadd,
+  set
+}: IRegisterEnvironment) {
   if (!user.applications.includes(applicationId)) {
     logger.debug(`Invalid application id for matching`, user, applicationId);
     return false;
@@ -17,13 +22,8 @@ export default async function registerToPool(
 
   const { connectionId } = user;
   const added = await Promise.all([
-    redisSadd(
-      redisConnection,
-      redisKeys.matchingPool(applicationId),
-      connectionId
-    ),
-    redisSet(
-      redisConnection,
+    sadd(redisKeys.matchingPool(applicationId), connectionId),
+    set(
       redisKeys.matchingTime(applicationId, connectionId),
       Date.now().toString()
     )

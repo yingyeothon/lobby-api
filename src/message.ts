@@ -1,7 +1,7 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
 import logger from "./logger";
-import doMatch from "./match/doMatch";
-import getRedis from "./match/getRedis";
+import doMatch from "./match/redis/doMatch";
+import getRedis from "./match/redis/getRedis";
 import { LobbyRequest } from "./model/messages";
 import responses from "./model/responses";
 import getUser from "./redis/user/getUser";

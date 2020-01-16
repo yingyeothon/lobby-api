@@ -1,20 +1,24 @@
-import { IRedisConnection } from "@yingyeothon/naive-redis/lib/connection";
-import redisDel from "@yingyeothon/naive-redis/lib/del";
-import redisSrem from "@yingyeothon/naive-redis/lib/srem";
 import IUser from "../model/user";
 import redisKeys from "../redis/keys";
 
-export default async function deregisterFromPool(
-  user: IUser,
-  redisConnection: IRedisConnection
-) {
+interface IDeregisterEnvironment {
+  user: IUser;
+  srem: (key: string, value: string) => Promise<any>;
+  del: (key: string) => Promise<any>;
+}
+
+export default async function deregisterFromPool({
+  user,
+  srem,
+  del
+}: IDeregisterEnvironment) {
   const { connectionId } = user;
   return Promise.all([
     ...user.applications.map(appId =>
-      redisSrem(redisConnection, redisKeys.matchingPool(appId), connectionId)
+      srem(redisKeys.matchingPool(appId), connectionId)
     ),
     ...user.applications.map(appId =>
-      redisDel(redisConnection, redisKeys.matchingTime(appId, connectionId))
+      del(redisKeys.matchingTime(appId, connectionId))
     )
   ]);
 }

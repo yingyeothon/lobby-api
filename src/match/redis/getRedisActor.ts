@@ -8,13 +8,13 @@ import mem from "mem";
 import apps from "../../data/applications";
 import dropConnections from "../../support/dropConnections";
 import postMessage from "../../support/postMessage";
-import getRedis from "../getRedis";
-import processMessage from "./processMessage";
-import getSubsys from "./subsys";
+import processMessage from "../actor/processMessage";
+import getRedis from "./getRedis";
+import getRedisSubsys from "./getRedisSubsys";
 
-function newActor(id: string): ActorSendEnvironment<{}> {
+function newRedisActor(id: string): ActorSendEnvironment<{}> {
   const redis = getRedis();
-  const subsys = getSubsys();
+  const subsys = getRedisSubsys();
   return {
     id,
     ...subsys,
@@ -38,4 +38,4 @@ function newActor(id: string): ActorSendEnvironment<{}> {
   };
 }
 
-export default mem(newActor);
+export default mem(newRedisActor);

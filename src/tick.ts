@@ -2,7 +2,7 @@ import redisSmembers from "@yingyeothon/naive-redis/lib/smembers";
 import { ScheduledHandler } from "aws-lambda";
 import apps from "./data/applications";
 import logger from "./logger";
-import requestMatch from "./match/requestMatch";
+import requestMatch from "./match/redis/requestMatch";
 import redisKeys from "./redis/keys";
 import useRedis from "./redis/useRedis";
 
