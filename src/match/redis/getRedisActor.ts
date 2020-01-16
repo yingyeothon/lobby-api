@@ -9,6 +9,7 @@ import apps from "../../data/applications";
 import dropConnections from "../../support/dropConnections";
 import postMessage from "../../support/postMessage";
 import processMessage from "../actor/processMessage";
+import invokeGameLambda from "../lambda/lambdaGameInvoker";
 import getRedis from "./getRedis";
 import getRedisSubsys from "./getRedisSubsys";
 
@@ -33,7 +34,10 @@ function newRedisActor(id: string): ActorSendEnvironment<{}> {
 
       // Message exchanger
       dropConnections,
-      postMessage
+      postMessage,
+
+      // GameInvoker
+      invoker: invokeGameLambda
     })
   };
 }
