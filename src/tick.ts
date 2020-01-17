@@ -1,6 +1,6 @@
 import redisSmembers from "@yingyeothon/naive-redis/lib/smembers";
 import { ScheduledHandler } from "aws-lambda";
-import apps from "./data/applications";
+import { getAppIds } from "./data/apps";
 import logger from "./logger";
 import requestMatch from "./match/redis/requestMatch";
 import redisKeys from "./redis/keys";
@@ -8,15 +8,16 @@ import useRedis from "./redis/useRedis";
 
 export const handle: ScheduledHandler = async () => {
   logger.info(`Start the matching tick`);
+  const installedAppIds = await getAppIds();
   const appIds = await useRedis(async redisConnection => {
     const targetAppIds: string[] = [];
-    for (const app of apps) {
+    for (const installedAppId of installedAppIds) {
       const members = await redisSmembers(
         redisConnection,
-        redisKeys.matchingPool(app.id)
+        redisKeys.matchingPool(installedAppId)
       );
       if (members.length > 0) {
-        targetAppIds.push(app.id);
+        targetAppIds.push(installedAppId);
       }
     }
     return targetAppIds;

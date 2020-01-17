@@ -4,8 +4,8 @@ import redisDel from "@yingyeothon/naive-redis/lib/del";
 import redisGet from "@yingyeothon/naive-redis/lib/get";
 import redisSmembers from "@yingyeothon/naive-redis/lib/smembers";
 import redisSrem from "@yingyeothon/naive-redis/lib/srem";
-import mem from "mem";
-import apps from "../../data/applications";
+import pMem from "p-memoize";
+import { getApp } from "../../data/apps";
 import dropConnections from "../../support/dropConnections";
 import postMessage from "../../support/postMessage";
 import processMessage from "../actor/processMessage";
@@ -13,7 +13,10 @@ import invokeGameLambda from "../lambda/lambdaGameInvoker";
 import getRedis from "./getRedis";
 import getRedisSubsys from "./getRedisSubsys";
 
-function newRedisActor(id: string): ActorSendEnvironment<{}> {
+async function newRedisActorEnvironment(
+  id: string
+): Promise<ActorSendEnvironment<{}>> {
+  const app = await getApp(id);
   const redis = getRedis();
   const subsys = getRedisSubsys();
   return {
@@ -23,7 +26,7 @@ function newRedisActor(id: string): ActorSendEnvironment<{}> {
     onMessages: processMessage({
       // Properties
       id,
-      app: apps.find(app => app.id === id)!,
+      app,
 
       // State manager
       smembers: key => redisSmembers(redis, key),
@@ -42,4 +45,4 @@ function newRedisActor(id: string): ActorSendEnvironment<{}> {
   };
 }
 
-export default mem(newRedisActor);
+export default pMem(newRedisActorEnvironment);

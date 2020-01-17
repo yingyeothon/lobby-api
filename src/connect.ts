@@ -1,5 +1,5 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
-import apps from "./data/applications";
+import { getAppIds } from "./data/apps";
 import logger from "./logger";
 import IAuthorization from "./model/authorization";
 import responses from "./model/responses";
@@ -25,8 +25,9 @@ export const handle: APIGatewayProxyHandler = async event => {
   logger.debug(`Authorization`, authorization);
 
   const { name, email, applications } = authorization;
+  const installedAppIds = await getAppIds();
   const supportedAppIds = applications.filter(id =>
-    apps.some(app => app.id === id)
+    installedAppIds.includes(id)
   );
   if (supportedAppIds.length === 0) {
     logger.debug(`No supported applications`);

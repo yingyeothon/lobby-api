@@ -14,14 +14,33 @@ provider:
   tracing:
     apiGateway: true
     lambda: true
+  apiGateway:
+    minimumCompressionSize: 1024
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
     REDIS_HOST: ${env:REDIS_HOST}
     REDIS_PASSWORD: ${env:REDIS_PASSWORD}
     WS_ENDPOINT: ${env:WS_ENDPOINT}
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
-  apiGateway:
-    minimumCompressionSize: 1024
+    CONFIG_BUCKET: ${env:CONFIG_BUCKET}
+    APPS_OBJECT_KEY: ${env:APPS_OBJECT_KEY}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+      Resource:
+        - Fn::Join:
+            - ":"
+            - - "arn:aws:lambda"
+              - Ref: "AWS::Region"
+              - Ref: "AWS::AccountId"
+              - "function"
+              - "*"
+    - Effect: "Allow"
+      Action:
+        - "s3:GetObject"
+      Resource:
+        - "arn:aws:s3:::${env:CONFIG_BUCKET}/*"
 
 custom:
   prune:
