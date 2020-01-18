@@ -1,3 +1,4 @@
+import IUser from "../../model/user";
 import redisKeys from "../../redis/keys";
 import clearMatchingContext, { ClearEnvironment } from "./clearMatchingContext";
 import IMatchProperty from "./env/property";
@@ -9,11 +10,12 @@ export type DropEnvironment = Pick<IMatchProperty, "app"> &
   ClearEnvironment;
 
 export default function tryToDropLongWaiters(env: DropEnvironment) {
-  return async (connectionIds: string[]) => {
+  return async (remaining: IUser[]) => {
     const { maxWaitingMillis } = env.app;
-    if (connectionIds.length === 0 || maxWaitingMillis === undefined) {
-      return connectionIds; // Nothing to do.
+    if (remaining.length === 0 || maxWaitingMillis === undefined) {
+      return remaining; // Nothing to do.
     }
+    const connectionIds = remaining.map(u => u.connectionId);
     const matchingTimes = await Promise.all(
       connectionIds.map(connectionId =>
         env
@@ -27,8 +29,8 @@ export default function tryToDropLongWaiters(env: DropEnvironment) {
     );
     logger.info(`Drop old connections`, droppables);
     await clearMatchingContext(env)(droppables);
-    return connectionIds.filter(
-      connectionId => !droppables.includes(connectionId)
-    ); // Remaing connectionIds.
+
+    // Remaing users.
+    return remaining.filter(u => !droppables.includes(u.connectionId));
   };
 }

@@ -3,10 +3,12 @@ export default class MockRedis {
   private readonly sv: { [key: string]: string[] } = {};
 
   public get = async (key: string) => {
+    console.log(`mock-redis-get`, key);
     return this.v[key] ?? null;
   };
 
   public set = async (key: string, value: string) => {
+    console.log(`mock-redis-set`, key, value);
     return (this.v[key] = value);
   };
 

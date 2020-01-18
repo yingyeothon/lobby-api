@@ -6,6 +6,7 @@ import redisSmembers from "@yingyeothon/naive-redis/lib/smembers";
 import redisSrem from "@yingyeothon/naive-redis/lib/srem";
 import pMem from "p-memoize";
 import { getApp } from "../../data/apps";
+import getUser from "../../redis/user/getUser";
 import dropConnections from "../../support/dropConnections";
 import postMessage from "../../support/postMessage";
 import processMessage from "../actor/processMessage";
@@ -19,6 +20,7 @@ async function newRedisActorEnvironment(
   const app = await getApp(id);
   const redis = getRedis();
   const subsys = getRedisSubsys();
+
   return {
     id,
     ...subsys,
@@ -34,6 +36,8 @@ async function newRedisActorEnvironment(
       srem: (key: string, ...values: string[]) =>
         redisSrem(redis, key, ...values),
       del: (...keys: string[]) => redisDel(redis, ...keys),
+
+      getUser: (connectionId: string) => getUser(redis, connectionId),
 
       // Message exchanger
       dropConnections,

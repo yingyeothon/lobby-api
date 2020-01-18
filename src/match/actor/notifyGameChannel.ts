@@ -1,3 +1,4 @@
+import IUser from "../../model/user";
 import IMessageExchanger from "./env/message";
 import IMatchProperty from "./env/property";
 import logger from "./logger";
@@ -9,23 +10,16 @@ export default function notifyGameChannel({
   app,
   postMessage
 }: NotifyEnvironment) {
-  return async (
-    gameId: string,
-    connectionIds: string[],
-    playerIds: string[]
-  ) => {
-    const sent = await postMessage(connectionIds, (_, index) => ({
-      type: "match",
-      url: app.url,
-      gameId,
-      playerId: playerIds[index]
-    }));
-    logger.info(
-      `Notify a new game channel`,
-      gameId,
-      playerIds,
-      connectionIds,
-      sent
+  return async (gameId: string, matchedUsers: IUser[]) => {
+    const sent = await postMessage(
+      matchedUsers.map(u => u.connectionId),
+      (_, index) => ({
+        type: "match",
+        url: app.url,
+        gameId,
+        playerId: matchedUsers[index].userId
+      })
     );
+    logger.info(`Notify a new game channel`, gameId, matchedUsers, sent);
   };
 }

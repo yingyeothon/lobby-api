@@ -1,5 +1,5 @@
-import redisKeys from "../../redis/keys";
 import logger from "../logger";
+import readUsersFromPool, { IReadEnvironment } from "../readUsersFromPool";
 import IMatchProperty from "./env/property";
 import IStateManager from "./env/state";
 import tryToDropLongWaiters, { DropEnvironment } from "./tryToDropLongWaiters";
@@ -10,6 +10,7 @@ import tryToMatch, { MatchEnvironment } from "./tryToMatch";
 
 type ProcessEnvironment = Pick<IMatchProperty, "id"> &
   Pick<IStateManager, "smembers"> &
+  Omit<IReadEnvironment, "applicationId"> &
   MatchEnvironment &
   IncompletedMatchEnvironment &
   DropEnvironment;
@@ -23,7 +24,7 @@ export default function processMessage(env: ProcessEnvironment) {
       tryToDropLongWaiters(env)
     ].reduce(
       (pipeline, applier) => pipeline.then(applier),
-      env.smembers(redisKeys.matchingPool(env.id))
+      readUsersFromPool({ ...env, applicationId: env.id })
     );
     logger.info(`End of matching`, env.id, `remaining`, remaining);
   };

@@ -1,9 +1,12 @@
 import processMessage from "../../src/match/actor/processMessage";
 import registerToPool from "../../src/match/registerToPool";
 import IApplication from "../../src/model/application";
-import MockExchange from "./mockExchange";
-import useGameInvoker from "./mockGameInvoker";
-import MockRedis from "./mockRedis";
+import IUser from "../../src/model/user";
+import MockRedis from "../mock/mockRedis";
+import useDropConnections from "../mock/useDropConnections";
+import useGameInvoker from "../mock/useGameInvoker";
+import usePostMessage from "../mock/usePostMessage";
+import useUser from "../mock/useUser";
 
 const app: IApplication = {
   id: `test-app-id`,
@@ -11,39 +14,46 @@ const app: IApplication = {
   functionName: `arn:test-game-lambda`,
   memberCount: 2
 };
-const newUser = (index: number) => ({
+const newUser = (index: number): IUser => ({
   name: `test-${index}`,
   connectionId: `test-connection-${index}`,
   email: `unknown-${index}@doma.in`,
-  applications: [app.id]
+  applications: [app.id],
+  userId: `user-${index}`
 });
 
 test("simple", async () => {
   const mockRedis = new MockRedis();
-  const mockExchange = new MockExchange();
   const user1 = newUser(1);
   const user2 = newUser(2);
   const [invoked, invoker] = useGameInvoker();
+  const [postbox, postMessage] = usePostMessage();
+  const [dropped, dropConnections] = useDropConnections();
+  const { getUser, setUser } = useUser(mockRedis);
+  await setUser(user1);
+  await setUser(user2);
 
   await registerToPool({
     applicationId: app.id,
     user: user1,
     ...mockRedis
   });
-  expect(mockExchange.postbox.length).toEqual(0);
-  expect(mockExchange.dropped.length).toEqual(0);
+  expect(postbox.length).toEqual(0);
+  expect(dropped.length).toEqual(0);
   expect(invoked.length).toEqual(0);
 
   const matcher = processMessage({
     app,
     id: app.id,
     ...mockRedis,
-    ...mockExchange,
-    invoker
+    postMessage,
+    dropConnections,
+    invoker,
+    getUser
   });
   await matcher();
-  expect(mockExchange.postbox.length).toEqual(0);
-  expect(mockExchange.dropped.length).toEqual(0);
+  expect(postbox.length).toEqual(0);
+  expect(dropped.length).toEqual(0);
   expect(invoked.length).toEqual(0);
 
   await registerToPool({
@@ -51,12 +61,16 @@ test("simple", async () => {
     user: user2,
     ...mockRedis
   });
-  expect(mockExchange.postbox.length).toEqual(0);
-  expect(mockExchange.dropped.length).toEqual(0);
+  expect(postbox.length).toEqual(0);
+  expect(dropped.length).toEqual(0);
   expect(invoked.length).toEqual(0);
 
   await matcher();
-  expect(mockExchange.postbox.length).toEqual(2);
-  expect(mockExchange.dropped.length).toEqual(2);
+  expect(postbox.length).toEqual(2);
+  expect(dropped.length).toEqual(2);
   expect(invoked.length).toEqual(1);
+
+  console.log(`postbox`, postbox);
+  console.log(`dropped`, dropped);
+  console.log(`invoked`, invoked);
 });

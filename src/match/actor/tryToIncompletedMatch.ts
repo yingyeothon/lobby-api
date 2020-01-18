@@ -1,3 +1,4 @@
+import IUser from "../../model/user";
 import redisKeys from "../../redis/keys";
 import IMatchProperty from "./env/property";
 import IStateManager from "./env/state";
@@ -10,22 +11,25 @@ export type IncompletedMatchEnvironment = IMatchProperty &
 export default function tryToIncompletedMatch(
   env: IncompletedMatchEnvironment
 ) {
-  return async (connectionIds: string[]) => {
-    const { app, id } = env;
-    const { incompletedMatchingWaitMillis } = app;
-    if (
-      connectionIds.length === 0 ||
-      incompletedMatchingWaitMillis === undefined
-    ) {
-      return connectionIds; // Nothing to do.
+  return async (input: IUser[]) => {
+    const {
+      app: { incompletedMatchingWaitMillis },
+      id
+    } = env;
+    if (input.length === 0 || incompletedMatchingWaitMillis === undefined) {
+      return input; // Nothing to do.
     }
     const matchingTimeOfFirst = await env
-      .get(redisKeys.matchingTime(id, connectionIds[0]))
+      .get(redisKeys.matchingTime(id, input[0].connectionId))
       .then(maybe => (maybe !== null ? +maybe : 0));
-    if (Date.now() - matchingTimeOfFirst > incompletedMatchingWaitMillis) {
-      await matchGame(env)(connectionIds);
-      return [];
+
+    // It is too early matching incompleted.
+    if (Date.now() - matchingTimeOfFirst <= incompletedMatchingWaitMillis) {
+      return input;
     }
-    return connectionIds; // Remaing connectionIds.
+
+    // Do match all remaining members.
+    await matchGame(env)(input);
+    return [];
   };
 }

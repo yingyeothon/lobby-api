@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import IUser from "../../model/user";
 import clearMatchingContext, { ClearEnvironment } from "./clearMatchingContext";
 import invokeNewGame, { InvokeEnvironment } from "./invokeNewGame";
 import logger from "./logger";
@@ -9,21 +10,18 @@ export type MatchGameEnvironment = InvokeEnvironment &
   ClearEnvironment;
 
 export default function matchGame(env: MatchGameEnvironment) {
-  return async (connectionIds: string[]) => {
+  return async (matchedUsers: IUser[]) => {
     try {
       // Start a new Lambda to process game messages.
       const gameId = uuidv4();
-      const playerIds = Array(connectionIds.length)
-        .fill(0)
-        .map(_ => uuidv4());
-      await invokeNewGame(env)(gameId, playerIds);
+      await invokeNewGame(env)(gameId, matchedUsers);
 
       // Broadcast new game channel.
-      await notifyGameChannel(env)(gameId, connectionIds, playerIds);
+      await notifyGameChannel(env)(gameId, matchedUsers);
     } catch (error) {
-      logger.error(`Error occurred while matching`, connectionIds, error);
+      logger.error(`Error occurred while matching`, matchedUsers, error);
     } finally {
-      await clearMatchingContext(env)(connectionIds);
+      await clearMatchingContext(env)(matchedUsers.map(u => u.connectionId));
     }
   };
 }

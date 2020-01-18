@@ -1,4 +1,5 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
+import { v4 as uuidv4 } from "uuid";
 import { getAppIds } from "./data/apps";
 import logger from "./logger";
 import IAuthorization from "./model/authorization";
@@ -35,6 +36,7 @@ export const handle: APIGatewayProxyHandler = async event => {
   }
 
   const user: IUser = {
+    userId: uuidv4(),
     name,
     email,
     connectionId,
