@@ -18,14 +18,18 @@ type ProcessEnvironment = Pick<IMatchProperty, "id"> &
 export default function processMessage(env: ProcessEnvironment) {
   return async () => {
     logger.info(`Start matching`, env.id);
-    const remaining = await [
-      tryToMatch(env),
-      tryToIncompletedMatch(env),
-      tryToDropLongWaiters(env)
-    ].reduce(
-      (pipeline, applier) => pipeline.then(applier),
-      readUsersFromPool({ ...env, applicationId: env.id })
-    );
-    logger.info(`End of matching`, env.id, `remaining`, remaining);
+    try {
+      const remaining = await [
+        tryToMatch(env),
+        tryToIncompletedMatch(env),
+        tryToDropLongWaiters(env)
+      ].reduce(
+        (pipeline, applier) => pipeline.then(applier),
+        readUsersFromPool({ ...env, applicationId: env.id })
+      );
+      logger.info(`End of matching`, env.id, `remaining`, remaining);
+    } catch (error) {
+      logger.error(`Error occurred while matching`, env.id, error);
+    }
   };
 }

@@ -16,7 +16,10 @@ function doAuth(event: APIGatewayEvent): [boolean, IAuthorization | undefined] {
     event.requestContext.authorizer === undefined ||
     event.requestContext.authorizer === null
   ) {
-    const [allow, payload] = decodeJWT(event.headers.Authorization);
+    const [allow, payload] = decodeJWT(
+      event.headers.Authorization ??
+        (event.queryStringParameters ?? {}).authorization
+    );
     if (!allow) {
       return [false, undefined];
     }
