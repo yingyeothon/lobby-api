@@ -6,7 +6,8 @@ export default async function useRedis<R>(
 ) {
   const connection = connect();
   try {
-    return connectionWork(connection);
+    const result = await connectionWork(connection);
+    return result;
   } finally {
     connection.socket.disconnect();
   }

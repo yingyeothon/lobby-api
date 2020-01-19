@@ -14,7 +14,7 @@ export default async function dropConnections(connectionIds: string[]) {
           await dropConnection(connectionId);
           return [connectionId, true] as SuccessRow;
         } catch (error) {
-          logger.error(`Cannot drop the connection`, connectionId);
+          logger.error(`Cannot drop the connection`, connectionId, error);
           return [connectionId, false] as SuccessRow;
         }
       })

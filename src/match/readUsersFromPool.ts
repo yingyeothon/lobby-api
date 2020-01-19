@@ -26,6 +26,8 @@ export default async function readUsersFromPool({
     .filter(Boolean)
     .map(u => u!);
 
+  // TODO Delete members who already deleted their context.
+
   logger.debug(`Users in pool`, users);
   return users;
 }

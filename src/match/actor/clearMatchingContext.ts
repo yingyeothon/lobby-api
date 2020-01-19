@@ -15,6 +15,10 @@ export default function clearMatchingContext({
   dropConnections
 }: ClearEnvironment) {
   return async (connectionIds: string[]) => {
+    if (connectionIds.length === 0) {
+      return;
+    }
+
     const deleted = await Promise.all([
       srem(redisKeys.matchingPool(id), ...connectionIds),
       del(

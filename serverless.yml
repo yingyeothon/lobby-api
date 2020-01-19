@@ -51,8 +51,8 @@ package:
   individually: true
 
 functions:
-  auth:
-    handler: src/auth.handle
+  # auth:
+  #   handler: src/auth.handle
   connect:
     handler: src/connect.handle
     timeout: 3
@@ -60,7 +60,7 @@ functions:
     events:
       - websocket:
           route: $connect
-          authorizer: auth
+          # authorizer: auth
   disconnect:
     handler: src/disconnect.handle
     timeout: 3
@@ -70,7 +70,7 @@ functions:
           route: $disconnect
   message:
     handler: src/message.handle
-    timeout: 3
+    timeout: 5
     memorySize: 256
     events:
       - websocket:

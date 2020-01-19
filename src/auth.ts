@@ -6,7 +6,7 @@ import env from "./model/env";
 
 const jwtSecretKey = env.jwtSecretKey;
 
-function decodeJWT(
+export function decodeJWT(
   authorizationToken: string | undefined
 ): [boolean, IAuthorization | undefined] {
   const [type, token] = (authorizationToken ?? "").split(/\s+/);
@@ -23,18 +23,19 @@ function decodeJWT(
 }
 
 function buildScopedMethodArn(methodArn: string) {
+  // arn:aws:execute-api:region:account-id:api-id/stage-name/$connect
   const [, , , region, accountId, apiId, stage] = methodArn.split(/[:/]/);
   const scopedMethodArn =
     ["arn", "aws", "execute-api", region, accountId, apiId].join(":") +
     "/" +
-    [stage, /* method= */ "*", /* function= */ "*"].join("/");
+    [stage, /* route= */ "*"].join("/");
   return scopedMethodArn;
 }
 
 export const handle: CustomAuthorizerHandler = async event => {
   const [allow, context] = decodeJWT(event.authorizationToken);
   const policy = {
-    principalId: "user",
+    principalId: "lobby-user",
     policyDocument: {
       Version: "2012-10-17",
       Statement: [
@@ -47,6 +48,10 @@ export const handle: CustomAuthorizerHandler = async event => {
     },
     context
   };
-  logger.debug(`auth`, event.authorizationToken, policy);
+  logger.debug(
+    `auth`,
+    event.authorizationToken,
+    JSON.stringify(policy, null, 2)
+  );
   return policy;
 };

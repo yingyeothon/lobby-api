@@ -27,6 +27,10 @@ export default function tryToDropLongWaiters(env: DropEnvironment) {
     const droppables = connectionIds.filter(
       (_, index) => now - matchingTimes[index] > maxWaitingMillis
     );
+    if (droppables.length === 0) {
+      return remaining;
+    }
+
     logger.info(`Drop old connections`, droppables);
     await clearMatchingContext(env)(droppables);
 
