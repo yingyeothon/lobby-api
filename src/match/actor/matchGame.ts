@@ -19,6 +19,7 @@ export default function matchGame(env: MatchGameEnvironment) {
       // Broadcast new game channel.
       await notifyGameChannel(env)(gameId, matchedUsers);
     } catch (error) {
+      // TODO Cannot delete matching context until matched perfectly.
       logger.error(`Error occurred while matching`, matchedUsers, error);
     } finally {
       await clearMatchingContext(env)(matchedUsers.map(u => u.connectionId));
