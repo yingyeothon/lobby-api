@@ -31,5 +31,8 @@ export default function invokeNewGame({ app, invoker }: InvokeEnvironment) {
       }))
     );
     logger.info(`Start new game actor`, invoked);
+
+    // TODO Wait roughly until a game lambda is started.
+    await new Promise<void>(resolve => setTimeout(resolve, 500));
   };
 }
