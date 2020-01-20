@@ -8,6 +8,9 @@ export default async function invokeGameLambda(
   gameId: string,
   members: IGameMember[]
 ) {
+  if (app.functionName === undefined) {
+    return true;
+  }
   return new Lambda({
     endpoint: env.isOffline ? `http://localhost:3000` : undefined
   })

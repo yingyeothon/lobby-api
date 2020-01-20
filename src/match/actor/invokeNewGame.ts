@@ -19,6 +19,10 @@ export type InvokeEnvironment = Pick<IMatchProperty, "app"> & {
   invoker: GameInvoker;
 };
 
+function sleep(millis: number) {
+  return new Promise<void>(resolve => setTimeout(resolve, millis));
+}
+
 export default function invokeNewGame({ app, invoker }: InvokeEnvironment) {
   return async (gameId: string, matchedUsers: IUser[]) => {
     const invoked = await invoker(
@@ -32,7 +36,8 @@ export default function invokeNewGame({ app, invoker }: InvokeEnvironment) {
     );
     logger.info(`Start new game actor`, invoked);
 
-    // TODO Wait roughly until a game lambda is started.
-    await new Promise<void>(resolve => setTimeout(resolve, 500));
+    // Wait roughly until a game lambda is started.
+    // TODO It should be replaced by awaiter.
+    await sleep(500 /* MAGIC NUMBER */);
   };
 }

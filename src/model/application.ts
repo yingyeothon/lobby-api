@@ -1,7 +1,9 @@
 export default interface IApplication {
   id: string;
   url: string;
-  functionName: string;
+
+  // For testing purpose, it can be omitted.
+  functionName?: string;
   memberCount: number;
 
   incompletedMatchingWaitMillis?: number;
