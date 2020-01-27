@@ -22,9 +22,7 @@ export default function invokeGameLambda({
         FunctionName: app.functionName,
         InvocationType: "Event",
         Qualifier: "$LATEST",
-        Payload: JSON.stringify({
-          args
-        })
+        Payload: JSON.stringify(args)
       })
       .promise();
 
