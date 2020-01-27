@@ -17,13 +17,13 @@ export default function matchGame(env: MatchGameEnvironment) {
     try {
       // Start a new Lambda to process game messages.
       const gameId = uuidv4();
-      await invoker(gameId, matchedUsers);
+      if (await invoker(gameId, matchedUsers)) {
+        // Broadcast new game channel.
+        await notifier(gameId, matchedUsers);
 
-      // Broadcast new game channel.
-      await notifier(gameId, matchedUsers);
-
-      // Clear context if success.
-      await cleaner(matchedUsers.map(u => u.connectionId));
+        // Clear context if success.
+        await cleaner(matchedUsers.map(u => u.connectionId));
+      }
     } catch (error) {
       logger.error(`Cannot match`, matchedUsers, `due to`, error);
     }
