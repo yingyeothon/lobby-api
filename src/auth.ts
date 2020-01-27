@@ -9,8 +9,8 @@ const jwtSecretKey = env.jwtSecretKey;
 export function decodeJWT(
   authorizationToken: string | undefined
 ): [boolean, IAuthorization | undefined] {
-  const [type, token] = (authorizationToken ?? "").split(/\s+/);
-  if (type !== "Bearer" || token?.length === 0) {
+  const token = (authorizationToken ?? "").trim();
+  if (token.length === 0) {
     return [false, undefined];
   }
   try {
@@ -22,18 +22,10 @@ export function decodeJWT(
   }
 }
 
-function buildScopedMethodArn(methodArn: string) {
-  // arn:aws:execute-api:region:account-id:api-id/stage-name/$connect
-  const [, , , region, accountId, apiId, stage] = methodArn.split(/[:/]/);
-  const scopedMethodArn =
-    ["arn", "aws", "execute-api", region, accountId, apiId].join(":") +
-    "/" +
-    [stage, /* route= */ "*"].join("/");
-  return scopedMethodArn;
-}
-
 export const handle: CustomAuthorizerHandler = async event => {
-  const [allow, context] = decodeJWT(event.authorizationToken);
+  const [allow, context] = decodeJWT(
+    (event.queryStringParameters ?? {}).authorization
+  );
   const policy = {
     principalId: "lobby-user",
     policyDocument: {
@@ -42,7 +34,7 @@ export const handle: CustomAuthorizerHandler = async event => {
         {
           Action: "execute-api:Invoke",
           Effect: allow ? "Allow" : "Deny",
-          Resource: buildScopedMethodArn(event.methodArn)
+          Resource: event.methodArn
         }
       ]
     },
