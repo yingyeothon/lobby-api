@@ -10,17 +10,20 @@ export type MatchGameEnvironment = InvokeEnvironment &
   ClearEnvironment;
 
 export default function matchGame(env: MatchGameEnvironment) {
+  const invoker = invokeNewGame(env);
+  const notifier = notifyGameChannel(env);
+  const cleaner = clearMatchingContext(env);
   return async (matchedUsers: IUser[]) => {
     try {
       // Start a new Lambda to process game messages.
       const gameId = uuidv4();
-      await invokeNewGame(env)(gameId, matchedUsers);
+      await invoker(gameId, matchedUsers);
 
       // Broadcast new game channel.
-      await notifyGameChannel(env)(gameId, matchedUsers);
+      await notifier(gameId, matchedUsers);
 
       // Clear context if success.
-      await clearMatchingContext(env)(matchedUsers.map(u => u.connectionId));
+      await cleaner(matchedUsers.map(u => u.connectionId));
     } catch (error) {
       logger.error(`Cannot match`, matchedUsers, `due to`, error);
     }

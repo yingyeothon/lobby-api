@@ -1,9 +1,17 @@
 import { CustomAuthorizerResult } from "aws-lambda";
+import * as jwt from "jsonwebtoken";
 import { decodeJWT, handle } from "../src/auth";
+import IAuthorization from "../src/model/authorization";
+import env from "../src/model/env";
+
+const newJWT = (payload: IAuthorization) => jwt.sign(payload, env.jwtSecretKey);
 
 test("pass-token", () => {
-  const input =
-    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoibGFjdGkiLCJlbWFpbCI6InVua25vd25AZW1haWwuYWRkcmVzcyIsImFwcGxpY2F0aW9ucyI6WyJhYmMiXSwiaWF0IjoxNTc5NDAxMjgzLCJleHAiOjE1Nzk0MDQ4ODN9.noJemkLqPW4zB4kD_tWB60c_Hu83WUyRaA1e66XE-dg";
+  const input = `Bearer ${newJWT({
+    name: "tester",
+    email: "unknown@domain.com",
+    applications: ["test-app"]
+  })}`;
   const [allow, payload] = decodeJWT(input);
   console.log(allow, payload);
   expect(allow).toBeTruthy();
@@ -11,8 +19,11 @@ test("pass-token", () => {
 });
 
 test("pass-handle", async () => {
-  const input =
-    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoibGFjdGkiLCJlbWFpbCI6InVua25vd25AZW1haWwuYWRkcmVzcyIsImFwcGxpY2F0aW9ucyI6WyJhYmMiXSwiaWF0IjoxNTc5NDAxMjgzLCJleHAiOjE1Nzk0MDQ4ODN9.noJemkLqPW4zB4kD_tWB60c_Hu83WUyRaA1e66XE-dg";
+  const input = `Bearer ${newJWT({
+    name: "tester",
+    email: "unknown@domain.com",
+    applications: ["test-app"]
+  })}`;
 
   const policy = (await handle(
     {

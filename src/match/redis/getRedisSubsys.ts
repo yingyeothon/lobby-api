@@ -8,23 +8,32 @@ import queueSize from "@yingyeothon/actor-system-redis-support/lib/queue/size";
 import mem from "mem";
 import logger from "../../logger";
 import getRedis from "./getRedis";
+import subsysPrefix from "./subsysPrefix";
 
 function newRedisActorSubsystem() {
   const connection = getRedis();
   return {
     logger,
     awaiter: {
-      ...awaiterWait({ connection, logger }),
-      ...awaiterResolve({ connection, logger })
+      ...awaiterWait({
+        connection,
+        logger,
+        keyPrefix: subsysPrefix.actorAwaiter
+      }),
+      ...awaiterResolve({
+        connection,
+        logger,
+        keyPrefix: subsysPrefix.actorAwaiter
+      })
     },
     queue: {
-      ...queueSize({ connection, logger }),
-      ...queuePush({ connection, logger }),
-      ...queueFlush({ connection, logger })
+      ...queueSize({ connection, logger, keyPrefix: subsysPrefix.actorQueue }),
+      ...queuePush({ connection, logger, keyPrefix: subsysPrefix.actorQueue }),
+      ...queueFlush({ connection, logger, keyPrefix: subsysPrefix.actorQueue })
     },
     lock: {
-      ...lockAcquire({ connection, logger }),
-      ...lockRelease({ connection, logger })
+      ...lockAcquire({ connection, logger, keyPrefix: subsysPrefix.actorLock }),
+      ...lockRelease({ connection, logger, keyPrefix: subsysPrefix.actorLock })
     }
   };
 }

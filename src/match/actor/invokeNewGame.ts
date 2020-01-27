@@ -1,4 +1,5 @@
 import IApplication from "../../model/application";
+import env from "../../model/env";
 import IUser from "../../model/user";
 import IMatchProperty from "./env/property";
 import logger from "./logger";
@@ -9,35 +10,32 @@ export interface IGameMember {
   email: string;
 }
 
-export type GameInvoker = (
-  app: IApplication,
-  gameId: string,
-  members: IGameMember[]
-) => Promise<any>;
+export interface IGameInvokeArguments {
+  app: IApplication;
+  gameId: string;
+  members: IGameMember[];
+  callbackUrl: string;
+}
+
+export type GameInvoker = (args: IGameInvokeArguments) => Promise<boolean>;
 
 export type InvokeEnvironment = Pick<IMatchProperty, "app"> & {
   invoker: GameInvoker;
 };
 
-function sleep(millis: number) {
-  return new Promise<void>(resolve => setTimeout(resolve, millis));
-}
-
 export default function invokeNewGame({ app, invoker }: InvokeEnvironment) {
-  return async (gameId: string, matchedUsers: IUser[]) => {
-    const invoked = await invoker(
+  return async (gameId: string, matchedUsers: IUser[]): Promise<boolean> => {
+    const invoked = await invoker({
       app,
       gameId,
-      matchedUsers.map(({ userId: memberId, name, email }) => ({
+      members: matchedUsers.map(({ userId: memberId, name, email }) => ({
         memberId,
         name,
         email
-      }))
-    );
+      })),
+      callbackUrl: [env.callbackUrlPrefix, app.id, gameId].join("/")
+    });
     logger.info(`Start new game actor`, invoked);
-
-    // Wait roughly until a game lambda is started.
-    // TODO It should be replaced by awaiter.
-    await sleep(500 /* MAGIC NUMBER */);
+    return invoked;
   };
 }

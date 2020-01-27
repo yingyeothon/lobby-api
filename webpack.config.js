@@ -18,6 +18,9 @@ module.exports = {
   externals: [/aws-sdk/],
   module: {
     rules: [{ test: /\.tsx?$/, loader: "ts-loader" }]
+  },
+  optimization: {
+    usedExports: true
   }
   // plugins: [new BundleAnalyzerPlugin()]
 };

@@ -1,3 +1,4 @@
+import redisAwaiter from "@yingyeothon/actor-system-redis-support/lib/awaiter/wait";
 import { bulkConsumer } from "@yingyeothon/actor-system/lib/actor/env/consumeType";
 import { ActorSendEnvironment } from "@yingyeothon/actor-system/lib/actor/send";
 import redisDel from "@yingyeothon/naive-redis/lib/del";
@@ -13,6 +14,10 @@ import processMessage from "../actor/processMessage";
 import invokeGameLambda from "../lambda/lambdaGameInvoker";
 import getRedis from "./getRedis";
 import getRedisSubsys from "./getRedisSubsys";
+import logger from "./logger";
+import subsysPrefix from "./subsysPrefix";
+
+const gameInvokerMaxWaitMillis = 3 * 1000;
 
 async function newRedisActorEnvironment(
   id: string
@@ -44,7 +49,15 @@ async function newRedisActorEnvironment(
       postMessage,
 
       // GameInvoker
-      invoker: invokeGameLambda
+      invoker: invokeGameLambda({
+        // TODO keyPrefix, awaiterId, HTTP API for resolve
+        awaiter: async (appId, gameId) =>
+          redisAwaiter({
+            connection: redis,
+            keyPrefix: subsysPrefix.invokerAwaiter,
+            logger
+          }).wait(appId, gameId, gameInvokerMaxWaitMillis)
+      })
     })
   };
 }

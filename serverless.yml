@@ -70,8 +70,14 @@ functions:
           route: $disconnect
   message:
     handler: src/message.handle
-    timeout: 5
+    timeout: 12
     memorySize: 256
     events:
       - websocket:
           route: $default
+  invoked:
+    handler: src/invoked.handle
+    timeout: 6
+    memorySize: 256
+    events:
+      - http: PUT /invoked/{appId}/{gameId}
