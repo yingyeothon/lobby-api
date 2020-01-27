@@ -16,6 +16,7 @@ export const handle: ScheduledHandler = async () => {
         redisConnection,
         redisKeys.matchingPool(installedAppId)
       );
+      logger.info(`Check matching queue`, installedAppId, members);
       if (members.length > 0) {
         targetAppIds.push(installedAppId);
       }

@@ -57,7 +57,7 @@ functions:
   connect:
     handler: src/connect.handle
     timeout: 3
-    memorySize: 256
+    memorySize: 128
     events:
       - websocket:
           route: $connect
@@ -65,20 +65,26 @@ functions:
   disconnect:
     handler: src/disconnect.handle
     timeout: 3
-    memorySize: 256
+    memorySize: 128
     events:
       - websocket:
           route: $disconnect
   message:
     handler: src/message.handle
     timeout: 12
-    memorySize: 256
+    memorySize: 128
     events:
       - websocket:
           route: $default
   invoked:
     handler: src/invoked.handle
     timeout: 6
-    memorySize: 256
+    memorySize: 128
     events:
       - http: PUT /invoked/{appId}/{gameId}
+  tick:
+    handler: src/tick.handle
+    timeout: 30
+    memorySize: 128
+    events:
+      - schedule: cron(* * * * ? *)

@@ -5,12 +5,14 @@ import logger from "./logger";
 export interface IReadEnvironment {
   applicationId: string;
   smembers: (key: string) => Promise<string[]>;
+  srem: (key: string, ...values: string[]) => Promise<number>;
   getUser: (connectionId: string) => Promise<IUser | null>;
 }
 
 export default async function readUsersFromPool({
   applicationId,
   smembers,
+  srem,
   getUser
 }: IReadEnvironment): Promise<IUser[]> {
   logger.debug(`Read users from pool`, applicationId);
@@ -27,6 +29,13 @@ export default async function readUsersFromPool({
     .map(u => u!);
 
   // TODO Delete members who already deleted their context.
+  const lostConnectionIds = connectionIds.filter(connectionId =>
+    users.every(u => u.connectionId !== connectionId)
+  );
+  if (lostConnectionIds.length > 0) {
+    logger.info(`Drop lost connectionIds`, lostConnectionIds);
+    await srem(redisKeys.matchingPool(applicationId), ...lostConnectionIds);
+  }
 
   logger.debug(`Users in pool`, users);
   return users;

@@ -50,7 +50,6 @@ async function newRedisActorEnvironment(
 
       // GameInvoker
       invoker: invokeGameLambda({
-        // TODO keyPrefix, awaiterId, HTTP API for resolve
         awaiter: async (appId, gameId) =>
           redisAwaiter({
             connection: redis,
