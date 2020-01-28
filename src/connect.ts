@@ -1,6 +1,5 @@
-import { APIGatewayEvent, APIGatewayProxyHandler } from "aws-lambda";
+import { APIGatewayProxyHandler } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
-import { decodeJWT } from "./auth";
 import { getAppIds } from "./data/apps";
 import logger from "./logger";
 import IAuthorization from "./model/authorization";
@@ -9,27 +8,6 @@ import IUser from "./model/user";
 import setUser from "./redis/user/setUser";
 import useRedis from "./redis/useRedis";
 
-// I don't know why I can't use Lambda authorizer properly in this context,
-// so I have to use this code even it is a sad thing.
-function doAuth(event: APIGatewayEvent): [boolean, IAuthorization | undefined] {
-  if (
-    event.requestContext.authorizer === undefined ||
-    event.requestContext.authorizer === null
-  ) {
-    const [allow, payload] = decodeJWT(
-      event.headers.Authorization ??
-        (event.queryStringParameters ?? {}).authorization
-    );
-    if (!allow) {
-      return [false, undefined];
-    }
-    return [allow, payload];
-  }
-
-  const authorization = event.requestContext.authorizer as IAuthorization;
-  return [true, authorization];
-}
-
 export const handle: APIGatewayProxyHandler = async event => {
   const { connectionId } = event.requestContext;
   if (connectionId === undefined) {
@@ -37,13 +15,14 @@ export const handle: APIGatewayProxyHandler = async event => {
     return responses.BadRequest;
   }
 
-  const [allow, jwtPayload] = doAuth(event);
-  if (!allow) {
+  const authorization = event.requestContext.authorizer as
+    | IAuthorization
+    | null
+    | undefined;
+  if (authorization === undefined || authorization === null) {
     logger.debug(`No authorization`, JSON.stringify(event, null, 2));
     return responses.BadRequest;
   }
-
-  const authorization = jwtPayload!;
   logger.debug(`Authorization`, authorization);
 
   const { name, email, applications } = authorization;

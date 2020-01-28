@@ -52,8 +52,8 @@ package:
   individually: true
 
 functions:
-  # auth:
-  #   handler: src/auth.handle
+  auth:
+    handler: src/auth.handle
   connect:
     handler: src/connect.handle
     timeout: 3
@@ -61,7 +61,10 @@ functions:
     events:
       - websocket:
           route: $connect
-          # authorizer: auth
+          authorizer:
+            name: auth
+            identitySource:
+              - route.request.querystring.authorization
   disconnect:
     handler: src/disconnect.handle
     timeout: 3
