@@ -14,6 +14,8 @@ provider:
   tracing:
     apiGateway: true
     lambda: true
+  logs:
+    restApi: true
   apiGateway:
     minimumCompressionSize: 1024
   environment:
@@ -52,42 +54,44 @@ package:
   individually: true
 
 functions:
-  auth:
-    handler: src/auth.handle
+  # auth:
+  #   handler: src/auth.handle
+  #   timeout: 3
+  #   memorySize: 256
   connect:
     handler: src/connect.handle
-    timeout: 3
-    memorySize: 128
+    timeout: 6
+    memorySize: 256
     events:
       - websocket:
           route: $connect
-          authorizer:
-            name: auth
-            identitySource:
-              - route.request.querystring.authorization
+          # authorizer:
+          #   name: auth
+          #   identitySource:
+          #     - route.request.querystring.authorization
   disconnect:
     handler: src/disconnect.handle
     timeout: 3
-    memorySize: 128
+    memorySize: 256
     events:
       - websocket:
           route: $disconnect
   message:
     handler: src/message.handle
     timeout: 12
-    memorySize: 128
+    memorySize: 256
     events:
       - websocket:
           route: $default
   invoked:
     handler: src/invoked.handle
     timeout: 6
-    memorySize: 128
+    memorySize: 256
     events:
       - http: PUT /invoked/{appId}/{gameId}
   tick:
     handler: src/tick.handle
     timeout: 30
-    memorySize: 128
+    memorySize: 256
     events:
       - schedule: cron(* * * * ? *)

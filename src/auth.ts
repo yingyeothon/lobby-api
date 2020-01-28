@@ -27,7 +27,7 @@ export const handle: CustomAuthorizerHandler = async event => {
     (event.queryStringParameters ?? {}).authorization
   );
   const policy = {
-    principalId: "lobby-user",
+    principalId: "user",
     policyDocument: {
       Version: "2012-10-17",
       Statement: [
@@ -42,7 +42,7 @@ export const handle: CustomAuthorizerHandler = async event => {
   };
   logger.debug(
     `auth`,
-    event.authorizationToken,
+    event.queryStringParameters,
     JSON.stringify(policy, null, 2)
   );
   return policy;

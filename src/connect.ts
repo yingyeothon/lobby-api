@@ -1,5 +1,6 @@
-import { APIGatewayProxyHandler } from "aws-lambda";
+import { APIGatewayProxyEvent, APIGatewayProxyHandler } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
+import { decodeJWT } from "./auth";
 import { getAppIds } from "./data/apps";
 import logger from "./logger";
 import IAuthorization from "./model/authorization";
@@ -8,6 +9,19 @@ import IUser from "./model/user";
 import setUser from "./redis/user/setUser";
 import useRedis from "./redis/useRedis";
 
+function doAuth(event: APIGatewayProxyEvent) {
+  const { authorizer } = event.requestContext;
+  if (authorizer !== null && authorizer !== undefined) {
+    return authorizer as IAuthorization;
+  }
+  const { authorization } = event.queryStringParameters ?? {};
+  const [allow, context] = decodeJWT(authorization);
+  if (allow) {
+    return context!;
+  }
+  return null;
+}
+
 export const handle: APIGatewayProxyHandler = async event => {
   const { connectionId } = event.requestContext;
   if (connectionId === undefined) {
@@ -15,11 +29,8 @@ export const handle: APIGatewayProxyHandler = async event => {
     return responses.BadRequest;
   }
 
-  const authorization = event.requestContext.authorizer as
-    | IAuthorization
-    | null
-    | undefined;
-  if (authorization === undefined || authorization === null) {
+  const authorization = doAuth(event);
+  if (authorization === null) {
     logger.debug(`No authorization`, JSON.stringify(event, null, 2));
     return responses.BadRequest;
   }
