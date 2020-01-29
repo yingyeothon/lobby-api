@@ -55,7 +55,7 @@ export const handle: APIGatewayProxyHandler = async event => {
   };
   logger.info(`Setup a new user`, user);
 
-  return useRedis(async redisConnection => {
+  const response = await useRedis(async redisConnection => {
     try {
       const setResult = await setUser(redisConnection, user);
       logger.debug(`User`, user, `redisResponse`, setResult);
@@ -65,4 +65,5 @@ export const handle: APIGatewayProxyHandler = async event => {
       return responses.BadRequest;
     }
   });
+  return response;
 };
