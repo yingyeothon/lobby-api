@@ -31,3 +31,7 @@ export async function getAppIds() {
 export async function getApp(applicationId: string) {
   return getAppsWithCache().then(apps => apps[applicationId]);
 }
+
+export function clearAppsCache() {
+  pMemoize.clear(getAppsWithCache);
+}

@@ -95,3 +95,9 @@ functions:
     memorySize: 256
     events:
       - schedule: cron(* * * * ? *)
+  clearAppsCache:
+    handler: src/cache.doClearAppsCache
+    timeout: 6
+    memorySize: 256
+    events:
+      - http: DELETE /_cache/apps
