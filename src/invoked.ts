@@ -1,10 +1,12 @@
-import awaiterResolve from "@yingyeothon/actor-system-redis-support/lib/awaiter/resolve";
 import { APIGatewayProxyHandler } from "aws-lambda";
-import logger from "./logger";
+import awaiterResolve from "@yingyeothon/actor-system-redis-support/lib/awaiter/resolve";
+import { getLogger } from "@yingyeothon/slack-logger";
 import subsysPrefix from "./match/redis/subsysPrefix";
 import useRedis from "./redis/useRedis";
 
-export const handle: APIGatewayProxyHandler = async event => {
+const logger = getLogger("handle:invoked", __filename);
+
+export const handle: APIGatewayProxyHandler = async (event) => {
   const pathParameters = event.pathParameters ?? {};
   if (!("appId" in pathParameters)) {
     return { statusCode: 404, body: "NotFound" };
@@ -14,15 +16,16 @@ export const handle: APIGatewayProxyHandler = async event => {
   }
 
   const { appId, gameId } = pathParameters;
-  logger.info("Start to mark a game as invoked", appId, gameId);
+  logger.info({ appId, gameId }, "Start to mark a game as invoked");
 
-  const resolved = await useRedis(connection =>
+  const resolved = await useRedis((connection) =>
     awaiterResolve({
       connection,
       keyPrefix: subsysPrefix.invokerAwaiter,
-      logger
     }).resolve(appId, gameId)
   );
-  logger.info("Game invoked", appId, gameId, resolved);
+  logger.info({ appId, gameId, resolved }, "Game invoked");
+
+  await logger.flushSlack();
   return { statusCode: 200, body: "OK" };
 };

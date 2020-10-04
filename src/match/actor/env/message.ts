@@ -1,11 +1,11 @@
 import { LobbyResponse } from "../../../model/messages";
-import { ISuccessMap } from "../../../support/successMap";
+import { SuccessMap } from "../../../support/successMap";
 
-export default interface IMessageExchanger {
+export default interface MessageExchanger {
   postMessage: (
     connectionIds: string[],
     messageBuilder: (connectionId: string, index: number) => LobbyResponse
-  ) => Promise<ISuccessMap>;
+  ) => Promise<SuccessMap>;
 
-  dropConnections: (connectionIds: string[]) => Promise<ISuccessMap>;
+  dropConnections: (connectionIds: string[]) => Promise<SuccessMap>;
 }

@@ -1,19 +1,20 @@
 import {
+  GameInvokeArguments,
   GameInvoker,
-  IGameInvokeArguments,
-  IGameMember
+  GameMember,
 } from "../../src/match/actor/invokeNewGame";
-import IApplication from "../../src/model/application";
+
+import Application from "../../src/model/Application";
 
 interface IGameInvoked {
-  app: IApplication;
+  app: Application;
   gameId: string;
-  members: IGameMember[];
+  members: GameMember[];
 }
 
 export default function useGameInvoker(): [IGameInvoked[], GameInvoker] {
   const invoked: IGameInvoked[] = [];
-  const invoker = async (args: IGameInvokeArguments) => {
+  const invoker = async (args: GameInvokeArguments) => {
     invoked.push(args);
     return true;
   };

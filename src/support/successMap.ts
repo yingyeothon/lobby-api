@@ -1,22 +1,22 @@
 export type SuccessRow = [string, boolean];
 
-export interface ISuccessMap {
+export interface SuccessMap {
   [connectionId: string]: boolean;
 }
 
-export function successRowAsMap(rows: SuccessRow[]): ISuccessMap {
+export function successRowAsMap(rows: SuccessRow[]): SuccessMap {
   return rows.reduce(
     (obj, [id, success]) => Object.assign(obj, { [id]: success }),
-    {} as ISuccessMap
+    {} as SuccessMap
   );
 }
 
 export function allOrNoneForSuccessMap(
   connectionIds: string[],
   success: boolean
-): ISuccessMap {
+): SuccessMap {
   return connectionIds.reduce(
     (obj, id) => Object.assign(obj, { [id]: success }),
-    {} as ISuccessMap
+    {} as SuccessMap
   );
 }

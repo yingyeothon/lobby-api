@@ -1,6 +1,6 @@
-import IApplication from "../../../model/application";
+import Application from "../../../model/Application";
 
-export default interface IMatchProperty {
+export default interface MatchProperty {
   id: string;
-  app: IApplication;
+  app: Application;
 }

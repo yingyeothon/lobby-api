@@ -1,9 +1,9 @@
-import { IRedisConnection } from "@yingyeothon/naive-redis/lib/connection";
+import { RedisConnection } from "@yingyeothon/naive-redis/lib/connection";
 import connect from "./connect";
 
 export default async function useRedis<R>(
-  connectionWork: (connection: IRedisConnection) => Promise<R>
-) {
+  connectionWork: (connection: RedisConnection) => Promise<R>
+): Promise<R> {
   const connection = connect();
   try {
     const result = await connectionWork(connection);

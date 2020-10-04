@@ -1,20 +1,22 @@
+import MatchProperty from "./env/property";
+import MessageExchanger from "./env/message";
+import StateManager from "./env/state";
+import { getLogger } from "@yingyeothon/slack-logger";
 import redisKeys from "../../redis/keys";
-import IMessageExchanger from "./env/message";
-import IMatchProperty from "./env/property";
-import IStateManager from "./env/state";
-import logger from "./logger";
 
-export type ClearEnvironment = Pick<IMatchProperty, "id"> &
-  Pick<IStateManager, "del" | "srem"> &
-  Pick<IMessageExchanger, "dropConnections">;
+export type ClearEnvironment = Pick<MatchProperty, "id"> &
+  Pick<StateManager, "del" | "srem"> &
+  Pick<MessageExchanger, "dropConnections">;
+
+const logger = getLogger("clearMatchingContext", __filename);
 
 export default function clearMatchingContext({
   id,
   srem,
   del,
-  dropConnections
+  dropConnections,
 }: ClearEnvironment) {
-  return async (connectionIds: string[]) => {
+  return async (connectionIds: string[]): Promise<void> => {
     if (connectionIds.length === 0) {
       return;
     }
@@ -22,14 +24,14 @@ export default function clearMatchingContext({
     const deleted = await Promise.all([
       srem(redisKeys.matchingPool(id), ...connectionIds),
       del(
-        ...connectionIds.map(connectionId =>
+        ...connectionIds.map((connectionId) =>
           redisKeys.matchingTime(id, connectionId)
         )
-      )
+      ),
     ]);
-    logger.info(`Delete old matching context`, connectionIds, deleted);
+    logger.info({ connectionIds, deleted }, `Delete old matching context`);
 
     const dropped = await dropConnections(connectionIds);
-    logger.info(`Drop matched connections`, dropped);
+    logger.info({ dropped }, `Drop matched connections`);
   };
 }

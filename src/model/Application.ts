@@ -1,4 +1,4 @@
-export default interface IApplication {
+export default interface Application {
   id: string;
   url: string;
 

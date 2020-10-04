@@ -1,19 +1,24 @@
-import { v4 as uuidv4 } from "uuid";
-import logger from "../../logger";
-import IUser from "../../model/user";
 import clearMatchingContext, { ClearEnvironment } from "./clearMatchingContext";
 import invokeNewGame, { InvokeEnvironment } from "./invokeNewGame";
 import notifyGameChannel, { NotifyEnvironment } from "./notifyGameChannel";
+
+import User from "../../model/User";
+import { getLogger } from "@yingyeothon/slack-logger";
+import { v4 as uuidv4 } from "uuid";
 
 export type MatchGameEnvironment = InvokeEnvironment &
   NotifyEnvironment &
   ClearEnvironment;
 
-export default function matchGame(env: MatchGameEnvironment) {
+type Matcher = (matcherUsers: User[]) => Promise<void>;
+
+const logger = getLogger("matchGame", __filename);
+
+export default function matchGame(env: MatchGameEnvironment): Matcher {
   const invoker = invokeNewGame(env);
   const notifier = notifyGameChannel(env);
   const cleaner = clearMatchingContext(env);
-  return async (matchedUsers: IUser[]) => {
+  return async (matchedUsers: User[]) => {
     try {
       // Start a new Lambda to process game messages.
       const gameId = uuidv4();
@@ -22,10 +27,10 @@ export default function matchGame(env: MatchGameEnvironment) {
         await notifier(gameId, matchedUsers);
 
         // Clear context if success.
-        await cleaner(matchedUsers.map(u => u.connectionId));
+        await cleaner(matchedUsers.map((u) => u.connectionId));
       }
     } catch (error) {
-      logger.error(`Cannot match`, matchedUsers, `due to`, error);
+      logger.error({ matchedUsers, error }, `Cannot match`);
     }
   };
 }

@@ -1,4 +1,4 @@
-export default interface IAuthorization {
+export default interface Authorization {
   name: string;
   email: string;
   applications: string[];

@@ -1,36 +1,41 @@
-import logger from "../logger";
-import readUsersFromPool, { IReadEnvironment } from "../readUsersFromPool";
-import IMatchProperty from "./env/property";
-import IStateManager from "./env/state";
+import readUsersFromPool, { ReadEnvironment } from "../readUsersFromPool";
 import tryToDropLongWaiters, { DropEnvironment } from "./tryToDropLongWaiters";
 import tryToIncompletedMatch, {
-  IncompletedMatchEnvironment
+  IncompletedMatchEnvironment,
 } from "./tryToIncompletedMatch";
 import tryToMatch, { MatchEnvironment } from "./tryToMatch";
 
-type ProcessEnvironment = Pick<IMatchProperty, "id"> &
-  Pick<IStateManager, "smembers"> &
-  Omit<IReadEnvironment, "applicationId"> &
+import MatchProperty from "./env/property";
+import StateManager from "./env/state";
+import { getLogger } from "@yingyeothon/slack-logger";
+
+type ProcessEnvironment = Pick<MatchProperty, "id"> &
+  Pick<StateManager, "smembers"> &
+  Omit<ReadEnvironment, "applicationId"> &
   MatchEnvironment &
   IncompletedMatchEnvironment &
   DropEnvironment;
 
-export default function processMessage(env: ProcessEnvironment) {
+const logger = getLogger("processMessage", __filename);
+
+export default function processMessage(
+  env: ProcessEnvironment
+): () => Promise<void> {
   const pipeline = [
     tryToMatch(env),
     tryToIncompletedMatch(env),
-    tryToDropLongWaiters(env)
+    tryToDropLongWaiters(env),
   ];
   return async () => {
-    logger.info(`Start matching`, env.id);
+    logger.info({ id: env.id }, `Start matching`);
     try {
       const remaining = await pipeline.reduce(
         (pipe, applier) => pipe.then(applier),
         readUsersFromPool({ ...env, applicationId: env.id })
       );
-      logger.info(`End of matching`, env.id, `remaining`, remaining);
+      logger.info({ id: env.id, remaining }, `End of matching`);
     } catch (error) {
-      logger.error(`Error occurred while matching`, env.id, error);
+      logger.error({ id: env.id, error }, `Error occurred while matching`);
     }
   };
 }

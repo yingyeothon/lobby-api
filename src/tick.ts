@@ -1,34 +1,37 @@
-import redisSmembers from "@yingyeothon/naive-redis/lib/smembers";
 import { ScheduledHandler } from "aws-lambda";
 import { getAppIds } from "./data/apps";
-import logger from "./logger";
-import requestMatch from "./match/redis/requestMatch";
+import { getLogger } from "@yingyeothon/slack-logger";
 import redisConnect from "./redis/connect";
 import redisKeys from "./redis/keys";
+import redisSmembers from "@yingyeothon/naive-redis/lib/smembers";
+import requestMatch from "./match/redis/requestMatch";
 
 const redisConnection = redisConnect();
+const logger = getLogger("handle:tick", __filename);
 
 export const handle: ScheduledHandler = async () => {
-  logger.info(`Start the matching tick`);
   const installedAppIds = await getAppIds();
+  logger.info({ installedAppIds }, `Start the matching tick`);
   const appIds: string[] = [];
   for (const installedAppId of installedAppIds) {
     const members = await redisSmembers(
       redisConnection,
       redisKeys.matchingPool(installedAppId)
     );
-    logger.info(`Check matching queue`, installedAppId, members);
+    logger.info({ installedAppId, members }, `Check matching queue`);
     if (members.length > 0) {
       appIds.push(installedAppId);
     }
   }
   try {
-    logger.info(`Try to match within applications`, appIds);
+    logger.info({ appIds }, `Try to match within applications`);
     if (appIds.length > 0) {
-      await Promise.all(appIds.map(appId => requestMatch(appId)));
+      await Promise.all(appIds.map((appId) => requestMatch(appId)));
     }
-    logger.info(`All done`);
+    logger.info({ appIds }, `All done`);
   } catch (error) {
-    logger.error(`Something wrong while matching tick`, error);
+    logger.error({ appIds, error }, `Something wrong while matching tick`);
   }
+
+  await logger.flushSlack();
 };

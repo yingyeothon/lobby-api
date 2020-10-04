@@ -1,27 +1,26 @@
-import redisAwaiter from "@yingyeothon/actor-system-redis-support/lib/awaiter/wait";
-import { bulkConsumer } from "@yingyeothon/actor-system/lib/actor/env/consumeType";
 import { ActorSendEnvironment } from "@yingyeothon/actor-system/lib/actor/send";
+import { bulkConsumer } from "@yingyeothon/actor-system/lib/actor/env/consumeType";
+import dropConnections from "../../support/dropConnections";
+import { getApp } from "../../data/apps";
+import getRedis from "./getRedis";
+import getRedisSubsys from "./getRedisSubsys";
+import getUser from "../../redis/user/getUser";
+import invokeGameLambda from "../lambda/lambdaGameInvoker";
+import pMem from "p-memoize";
+import postMessage from "../../support/postMessage";
+import processMessage from "../actor/processMessage";
+import redisAwaiter from "@yingyeothon/actor-system-redis-support/lib/awaiter/wait";
 import redisDel from "@yingyeothon/naive-redis/lib/del";
 import redisGet from "@yingyeothon/naive-redis/lib/get";
 import redisSmembers from "@yingyeothon/naive-redis/lib/smembers";
 import redisSrem from "@yingyeothon/naive-redis/lib/srem";
-import pMem from "p-memoize";
-import { getApp } from "../../data/apps";
-import getUser from "../../redis/user/getUser";
-import dropConnections from "../../support/dropConnections";
-import postMessage from "../../support/postMessage";
-import processMessage from "../actor/processMessage";
-import invokeGameLambda from "../lambda/lambdaGameInvoker";
-import getRedis from "./getRedis";
-import getRedisSubsys from "./getRedisSubsys";
-import logger from "./logger";
 import subsysPrefix from "./subsysPrefix";
 
 const gameInvokerMaxWaitMillis = 3 * 1000;
 
 async function newRedisActorEnvironment(
   id: string
-): Promise<ActorSendEnvironment<{}>> {
+): Promise<ActorSendEnvironment<unknown>> {
   const app = await getApp(id);
   const redis = getRedis();
   const subsys = getRedisSubsys();
@@ -36,7 +35,7 @@ async function newRedisActorEnvironment(
       app,
 
       // State manager
-      smembers: key => redisSmembers(redis, key),
+      smembers: (key) => redisSmembers(redis, key),
       get: (key: string) => redisGet(redis, key),
       srem: (key: string, ...values: string[]) =>
         redisSrem(redis, key, ...values),
@@ -54,10 +53,10 @@ async function newRedisActorEnvironment(
           redisAwaiter({
             connection: redis,
             keyPrefix: subsysPrefix.invokerAwaiter,
-            logger
-          }).wait(appId, gameId, gameInvokerMaxWaitMillis)
-      })
-    })
+            logger: subsys.logger,
+          }).wait(appId, gameId, gameInvokerMaxWaitMillis),
+      }),
+    }),
   };
 }
 

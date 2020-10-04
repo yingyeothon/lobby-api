@@ -1,41 +1,43 @@
-import IApplication from "../../model/application";
+import Application from "../../model/Application";
+import MatchProperty from "./env/property";
+import User from "../../model/User";
 import env from "../../model/env";
-import IUser from "../../model/user";
-import IMatchProperty from "./env/property";
-import logger from "./logger";
+import { getLogger } from "@yingyeothon/slack-logger";
 
-export interface IGameMember {
+export interface GameMember {
   memberId: string;
   name: string;
   email: string;
 }
 
-export interface IGameInvokeArguments {
-  app: IApplication;
+export interface GameInvokeArguments {
+  app: Application;
   gameId: string;
-  members: IGameMember[];
+  members: GameMember[];
   callbackUrl: string;
 }
 
-export type GameInvoker = (args: IGameInvokeArguments) => Promise<boolean>;
+export type GameInvoker = (args: GameInvokeArguments) => Promise<boolean>;
 
-export type InvokeEnvironment = Pick<IMatchProperty, "app"> & {
+export type InvokeEnvironment = Pick<MatchProperty, "app"> & {
   invoker: GameInvoker;
 };
 
+const logger = getLogger("invokeNewGame", __filename);
+
 export default function invokeNewGame({ app, invoker }: InvokeEnvironment) {
-  return async (gameId: string, matchedUsers: IUser[]): Promise<boolean> => {
+  return async (gameId: string, matchedUsers: User[]): Promise<boolean> => {
     const invoked = await invoker({
       app,
       gameId,
       members: matchedUsers.map(({ userId: memberId, name, email }) => ({
         memberId,
         name,
-        email
+        email,
       })),
-      callbackUrl: [env.callbackUrlPrefix, app.id, gameId].join("/")
+      callbackUrl: [env.callbackUrlPrefix, app.id, gameId].join("/"),
     });
-    logger.info(`Start new game actor`, invoked);
+    logger.info({ invoked }, `Start new game actor`);
     return invoked;
   };
 }

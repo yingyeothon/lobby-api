@@ -1,24 +1,24 @@
-import IUser from "../model/user";
+import User from "../model/User";
 import redisKeys from "../redis/keys";
 
-interface IDeregisterEnvironment {
-  user: IUser;
-  srem: (key: string, value: string) => Promise<any>;
-  del: (key: string) => Promise<any>;
+interface DeregisterEnvironment {
+  user: User;
+  srem: (key: string, value: string) => Promise<unknown>;
+  del: (key: string) => Promise<unknown>;
 }
 
 export default async function deregisterFromPool({
   user,
   srem,
-  del
-}: IDeregisterEnvironment) {
+  del,
+}: DeregisterEnvironment): Promise<unknown> {
   const { connectionId } = user;
   return Promise.all([
-    ...user.applications.map(appId =>
+    ...user.applications.map((appId) =>
       srem(redisKeys.matchingPool(appId), connectionId)
     ),
-    ...user.applications.map(appId =>
+    ...user.applications.map((appId) =>
       del(redisKeys.matchingTime(appId, connectionId))
-    )
+    ),
   ]);
 }

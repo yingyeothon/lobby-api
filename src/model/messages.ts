@@ -1,14 +1,14 @@
-export interface ILobbyMatchRequest {
+export interface LobbyMatchRequest {
   type: "match";
   application: string;
 }
 
-export interface ILobbyMatchResponse {
+export interface LobbyMatchResponse {
   type: "match";
   url: string;
   gameId: string;
   playerId: string;
 }
 
-export type LobbyRequest = ILobbyMatchRequest;
-export type LobbyResponse = ILobbyMatchResponse;
+export type LobbyRequest = LobbyMatchRequest;
+export type LobbyResponse = LobbyMatchResponse;

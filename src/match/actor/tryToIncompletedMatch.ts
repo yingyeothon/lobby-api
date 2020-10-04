@@ -1,27 +1,28 @@
-import IUser from "../../model/user";
-import redisKeys from "../../redis/keys";
-import IMatchProperty from "./env/property";
-import IStateManager from "./env/state";
 import matchGame, { MatchGameEnvironment } from "./matchGame";
 
-export type IncompletedMatchEnvironment = IMatchProperty &
-  Pick<IStateManager, "get"> &
+import MatchProperty from "./env/property";
+import StateManager from "./env/state";
+import User from "../../model/User";
+import redisKeys from "../../redis/keys";
+
+export type IncompletedMatchEnvironment = MatchProperty &
+  Pick<StateManager, "get"> &
   MatchGameEnvironment;
 
 export default function tryToIncompletedMatch(
   env: IncompletedMatchEnvironment
 ) {
-  return async (input: IUser[]) => {
+  return async (input: User[]): Promise<User[]> => {
     const {
       app: { incompletedMatchingWaitMillis },
-      id
+      id,
     } = env;
     if (input.length === 0 || incompletedMatchingWaitMillis === undefined) {
       return input; // Nothing to do.
     }
     const matchingTimeOfFirst = await env
       .get(redisKeys.matchingTime(id, input[0].connectionId))
-      .then(maybe => (maybe !== null ? +maybe : 0));
+      .then((maybe) => (maybe !== null ? +maybe : 0));
 
     // It is too early matching incompleted.
     if (Date.now() - matchingTimeOfFirst <= incompletedMatchingWaitMillis) {

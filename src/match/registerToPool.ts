@@ -1,22 +1,27 @@
-import IUser from "../model/user";
+import User from "../model/User";
+import { getLogger } from "@yingyeothon/slack-logger";
 import redisKeys from "../redis/keys";
-import logger from "./logger";
 
-interface IRegisterEnvironment {
-  user: IUser;
+const logger = getLogger("registerToPool", __filename);
+
+interface RegisterEnvironment {
+  user: User;
   applicationId: string;
-  sadd: (key: string, value: string) => Promise<any>;
-  set: (key: string, value: string) => Promise<any>;
+  sadd: (key: string, value: string) => Promise<unknown>;
+  set: (key: string, value: string) => Promise<unknown>;
 }
 
 export default async function registerToPool({
   user,
   applicationId,
   sadd,
-  set
-}: IRegisterEnvironment) {
+  set,
+}: RegisterEnvironment): Promise<boolean> {
   if (!user.applications.includes(applicationId)) {
-    logger.debug(`Invalid application id for matching`, user, applicationId);
+    logger.debug(
+      { user, applicationId },
+      `Invalid application id for matching`
+    );
     return false;
   }
 
@@ -26,8 +31,8 @@ export default async function registerToPool({
     set(
       redisKeys.matchingTime(applicationId, connectionId),
       Date.now().toString()
-    )
+    ),
   ]);
-  logger.info(`Add to matching pool`, user, applicationId, added);
+  logger.info({ user, applicationId, added }, `Add to matching pool`);
   return true;
 }
