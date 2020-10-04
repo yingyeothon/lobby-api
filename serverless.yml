@@ -27,6 +27,10 @@ provider:
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
     CONFIG_BUCKET: ${env:CONFIG_BUCKET}
     APPS_OBJECT_KEY: ${env:APPS_OBJECT_KEY}
+    SLACK_WEBHOOK_URL: ${env:SLACK_WEBHOOK_URL}
+    SLACK_CHANNEL: ${env:SLACK_CHANNEL}
+    SLACK_LOG_LEVEL: ${env:SLACK_LOG_LEVEL, "warn"}
+    CONSOLE_LOG_LEVEL: ${env:CONSOLE_LOG_LEVEL, "trace"}
   iamRoleStatements:
     - Effect: Allow
       Action:

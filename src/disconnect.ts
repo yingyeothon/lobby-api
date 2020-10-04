@@ -17,7 +17,7 @@ export const handle: APIGatewayProxyHandler = async (event) => {
     return responses.BadRequest;
   }
 
-  logger.info(`Start to clear user context`, connectionId);
+  logger.info({ connectionId }, `Start to clear user context`);
 
   await useRedis(async (redisConnection) => {
     const user = await getUser(redisConnection, connectionId);
