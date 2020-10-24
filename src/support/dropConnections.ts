@@ -20,7 +20,10 @@ export default async function dropConnections(
           await dropConnection(connectionId);
           return [connectionId, true] as SuccessRow;
         } catch (error) {
-          logger.error({ connectionId, error }, `Cannot drop the connection`);
+          (/GoneException/.test(error.name) ? logger.debug : logger.error)(
+            { connectionId, error },
+            `Cannot drop the connection`
+          );
           return [connectionId, false] as SuccessRow;
         }
       })

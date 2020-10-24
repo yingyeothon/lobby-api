@@ -19,3 +19,6 @@ html-bundle.zip
 # Data file
 apps.json
 dev-apps.json
+lobby-apps
+dev-lobby-apps
+

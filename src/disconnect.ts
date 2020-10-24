@@ -33,7 +33,7 @@ export const handle: APIGatewayProxyHandler = async (event) => {
         }),
         deleteUser(redisConnection, connectionId),
       ]);
-      logger.info({ user, deleted }, `Delete user`);
+      logger.debug({ user, deleted }, `Delete user`);
     } catch (error) {
       logger.error({ connectionId, user, error }, `Delete user error`);
     }

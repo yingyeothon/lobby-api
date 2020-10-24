@@ -39,7 +39,7 @@ export const handle: APIGatewayProxyHandler = async (event) => {
   }
   const [valid, maybeRequest] = validateRequest(event);
   if (!valid) {
-    logger.info(
+    logger.debug(
       { connectionId, body },
       `Drop the connection that sent invalid message`
     );

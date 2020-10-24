@@ -15,7 +15,7 @@ export default async function getUser(
     keys.user(connectionId)
   );
   if (serializedUser === null) {
-    logger.info({ connectionId }, `Already deleted`);
+    logger.debug({ connectionId }, `Already deleted`);
     return null;
   }
 

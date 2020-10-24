@@ -29,9 +29,9 @@ export default function clearMatchingContext({
         )
       ),
     ]);
-    logger.info({ connectionIds, deleted }, `Delete old matching context`);
+    logger.debug({ connectionIds, deleted }, `Delete old matching context`);
 
     const dropped = await dropConnections(connectionIds);
-    logger.info({ dropped }, `Drop matched connections`);
+    logger.debug({ dropped }, `Drop matched connections`);
   };
 }

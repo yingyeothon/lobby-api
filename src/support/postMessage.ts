@@ -34,7 +34,10 @@ export default async function postMessage(
           .promise()
           .then(() => [connectionId, true] as SuccessRow)
           .catch((error) => {
-            logger.error({ connectionId, error }, `Cannot send message`);
+            (/GoneException/.test(error.name) ? logger.debug : logger.error)(
+              { connectionId, error },
+              `Cannot send message`
+            );
             return [connectionId, false] as SuccessRow;
           })
       )

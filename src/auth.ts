@@ -22,7 +22,7 @@ export function decodeJWT(
     const payload = jwt.verify(token, jwtSecretKey) as Authorization;
     return [true, payload];
   } catch (error) {
-    logger.info({ authorizationToken, error }, `Invalid JWT`);
+    logger.warn({ authorizationToken, error }, `Invalid JWT`);
     return [false, undefined];
   }
 }
@@ -54,7 +54,7 @@ export const handle: APIGatewayAuthorizerHandler = async (event) => {
         }
       : null,
   };
-  logger.debug({ policy, token }, `auth`);
+  logger.info({ policy, token }, `auth`);
 
   await logger.flushSlack();
   return policy;

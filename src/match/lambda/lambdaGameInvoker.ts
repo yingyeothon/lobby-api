@@ -29,7 +29,7 @@ export default function invokeGameLambda({
     logger.debug({ invoked }, "Lambda invoked");
 
     const awaited = await awaiter(app.id, gameId);
-    logger.debug({ awaited }, "Game awaited");
+    logger.info({ appId: app.id, gameId, awaited }, "Game awaited");
     return awaited;
   };
 }
