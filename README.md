@@ -62,19 +62,19 @@ To authenticate, we should deploy [auth-api](https://github.com/yingyeothon/auth
 4. After matched, it received matched messsage like this.
 5. Or, its connection is dropped.
 
-For example, `application` is `ca9a2697-229f-4569-a282-1044f3037a86` then,
+For example, `application` is `very-complex-id-like-uuid` then,
 
 ```bash
 # Step 1. Get authorization token.
-$ curl -XPOST https://auth.api.url/simple -d '{"name":"lacti","email":"lactrious@gmail.com","application":"ca9a2697-229f-4569-a282-1044f3037a86"}'
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoibGFjdGkiLCJlbWFpbCI6ImxhY3RyaW91c0BnbWFpbC5jb20iLCJhcHBsaWNhdGlvbiI6ImNhOWEyNjk3LTIyOWYtNDU2OS1hMjgyLTEwNDRmMzAzN2E4NiIsImlhdCI6MTYyMTA2MTkxMiwiZXhwIjoxNjIxMDY1NTEyfQ.SECRET_ENCODED
+$ curl -XPOST https://auth.api.url/simple -d '{"name":"lacti","email":"lactrious@gmail.com","application":"very-complex-id-like-uuid"}'
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoibGFjdGkiLCJlbWFpbCI6ImxhY3RyaW91c0BnbWFpbC5jb20iLCJhcHBsaWNhdGlvbiI6InZlcnktY29tcGxleC1pZC1saWtlLXV1aWQiLCJpYXQiOjE2MjEwNjUzNTQsImV4cCI6MTYyMTA2ODk1NH0.SECRET_ENCODED
 
 # Step 2. Connect lobby-api with authorization query parameter.
-$ yarn wscat -c "wss://lobby.websocket.url/?authorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoibGFjdGkiLCJlbWFpbCI6ImxhY3RyaW91c0BnbWFpbC5jb20iLCJhcHBsaWNhdGlvbiI6ImNhOWEyNjk3LTIyOWYtNDU2OS1hMjgyLTEwNDRmMzAzN2E4NiIsImlhdCI6MTYyMTA2MTkxMiwiZXhwIjoxNjIxMDY1NTEyfQ.SECRET_ENCODED"
+$ yarn wscat -c "wss://lobby.websocket.url/?authorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoibGFjdGkiLCJlbWFpbCI6ImxhY3RyaW91c0BnbWFpbC5jb20iLCJhcHBsaWNhdGlvbiI6InZlcnktY29tcGxleC1pZC1saWtlLXV1aWQiLCJpYXQiOjE2MjEwNjUzNTQsImV4cCI6MTYyMTA2ODk1NH0.SECRET_ENCODED"
 
 Connected (press CTRL+C to quit)
 # Step 3. Send "match" message.
-> {"type":"match","application":"ca9a2697-229f-4569-a282-1044f3037a86"}
+> {"type":"match","application":"very-complex-id-like-uuid"}
 
 # Step 4. Receive "matched" message if matching is completed.
 < {"type":"match","url":"wss://game.websocket.url/","gameId":"3d73ccc8-b755-418f-8b78-f4badfc9c4b4","playerId":"c4409ca4-58a5-41dc-a5cf-433bd58778a0"}
@@ -85,6 +85,65 @@ Disconnected (code: 1000, reason: "Connection Closed Normally")
 # Step 5. Or, there are no matchable other users, disconnects this connection after about `maxWaitingMillis` milliseconds.
 Disconnected (code: 1000, reason: "Connection Closed Normally")
 ```
+
+And then, connect a game server using `${url}?x-game-id=${gameId}&x-member-id=${playerId}` URL. This is a simple convention from [`gamebase` module](https://github.com/yingyeothon/1team-mmo-backend/tree/main/libs/gamebase).
+
+### Test script
+
+We can use [`cli-connect.js`](cli-connect.js) script to easily see how to make a connection with game server via lobby api. It uses below two parameters.
+
+- `application` which is registered in `APPS_OBJECT_KEY` file in `CONFIG_BUCKET`.
+- `auth-api-url` which is deployed [`auth-api`](https://github.com/yingyeothon/auth-api) server.
+
+For example, we can run this script like this.
+
+```bash
+$ node cli-connect.js "awesome-application-id" "https://auth.api.url"
+{ stage: 'dev' }
+{
+  application: 'very-complex-id-like-uuid',
+  authUrl: 'https://auth.api.url',
+  name: 'test45'
+}
+{
+  authorization: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoibGFjdGkiLCJlbWFpbCI6ImxhY3RyaW91c0BnbWFpbC5jb20iLCJhcHBsaWNhdGlvbiI6InZlcnktY29tcGxleC1pZC1saWtlLXV1aWQiLCJpYXQiOjE2MjEwNjUzNTQsImV4cCI6MTYyMTA2ODk1NH0.SECRET_ENCODED'
+}
+{
+  lobbyUrl: 'wss://lobby.websocket.url/?authorization=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoibGFjdGkiLCJlbWFpbCI6ImxhY3RyaW91c0BnbWFpbC5jb20iLCJhcHBsaWNhdGlvbiI6InZlcnktY29tcGxleC1pZC1saWtlLXV1aWQiLCJpYXQiOjE2MjEwNjUzNTQsImV4cCI6MTYyMTA2ODk1NH0.SECRET_ENCODED'
+}
+{
+  matchRequest: {
+    type: 'match',
+    application: 'very-complex-id-like-uuid'
+  }
+}
+{
+  matchResponse: {
+    type: 'match',
+    url: 'wss://game.websocket.url/',
+    gameId: '8c159981-95aa-427c-b26f-62be08374af9',
+    playerId: '12e62380-6a01-487a-9507-8414c6de4640'
+  }
+}
+{
+  gameId: '8c159981-95aa-427c-b26f-62be08374af9',
+  playerId: '12e62380-6a01-487a-9507-8414c6de4640',
+  gameUrl: 'wss://game.websocket.url/?x-game-id=8c159981-95aa-427c-b26f-62be08374af9&x-member-id=12e62380-6a01-487a-9507-8414c6de4640'
+}
+Connected.
+{
+  data: '{"type":"enter","payload":{"memberId":"12e62380-6a01-487a-9507-8414c6de4640"}}'
+} Data received
+{ data: '{"type":"stage","payload":{"stage":"wait","age":0}}' } Data received
+{ data: '{"type":"stage","payload":{"stage":"running","age":0}}' } Data received
+{ data: '{"type":"stage","payload":{"stage":"running","age":1}}' } Data received
+...
+{ data: '{"type":"stage","payload":{"stage":"running","age":60}}' } Data received
+{ data: '{"type":"stage","payload":{"stage":"end","age":60}}' } Data received
+Disconnected.
+```
+
+This game server is basic example from [1team-mmo-backend](https://github.com/yingyeothon/1team-mmo-backend/).
 
 ## Server list
 
