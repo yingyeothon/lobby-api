@@ -1,0 +1,27 @@
+#!/bin/bash
+
+[ ! -z "$(type -t "source_up")" ] && source_up
+
+# Staging settings
+export STAGE="${STAGE:-"dev"}"
+
+# Infrastructure settings
+export REDIS_HOST="redis-host"
+export REDIS_PASSWORD="redis-password"
+
+# Messaging settings
+export WS_ENDPOINT="web.socket.endpoint/example"
+export CALLBACK_URL_PREFIX="https://callback-url.api.tld/lobby/invoked"
+
+# Authentication settings
+export JWT_SECRET_KEY="jwt-secret-key-which-is-same-with-auth-api"
+
+# Configuration settings
+export CONFIG_BUCKET="lobby-config-bucket-example"
+export APPS_OBJECT_KEY="lobby-apps-object-example"
+
+# Logger settings
+# export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/TXXXXXXXX/BXXXXXXXXXXXX/XXXXXXXXXXXXXXXXXXXXXXXX"
+# export SLACK_CHANNEL="CXXXXXXXXX"
+# export SLACK_LOG_LEVEL="warn"
+# export CONSOLE_LOG_LEVEL="trace"
