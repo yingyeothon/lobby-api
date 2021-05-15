@@ -1,17 +1,15 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require("path");
 const slsw = require("serverless-webpack");
-// const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
+const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 module.exports = {
   mode: slsw.lib.webpack.isLocal ? "development" : "production",
   entry: slsw.lib.entries,
-  // devtool: "source-map",
   resolve: {
-    extensions: [".js", ".jsx", ".json", ".ts", ".tsx"],
+    extensions: [".mjs", ".json", ".ts", ".js"],
   },
   output: {
-    libraryTarget: "commonjs",
+    libraryTarget: "commonjs2",
     path: path.join(__dirname, ".webpack"),
     filename: "[name].js",
   },
@@ -24,8 +22,6 @@ module.exports = {
   module: {
     rules: [{ test: /\.tsx?$/, loader: "ts-loader" }],
   },
-  optimization: {
-    usedExports: true,
-  },
-  // plugins: [new BundleAnalyzerPlugin()]
+  plugins:
+    process.env.ANALYZE_BUNDLE === "1" ? [new BundleAnalyzerPlugin()] : [],
 };
