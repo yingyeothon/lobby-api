@@ -12,7 +12,7 @@ test("pass-token", () => {
   const input = newJWT({
     name: "tester",
     email: "unknown@domain.com",
-    applications: ["test-app"],
+    application: "test-app",
   });
   const [allow, payload] = decodeJWT(input);
   console.log(allow, payload);
@@ -24,7 +24,7 @@ test("pass-handle", async () => {
   const input = newJWT({
     name: "tester",
     email: "unknown@domain.com",
-    applications: ["test-app"],
+    application: "test-app",
   });
 
   const policy = (await handle(

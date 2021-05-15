@@ -17,7 +17,7 @@ export default async function registerToPool({
   sadd,
   set,
 }: RegisterEnvironment): Promise<boolean> {
-  if (!user.applications.includes(applicationId)) {
+  if (user.application !== applicationId) {
     logger.debug(
       { user, applicationId },
       `Invalid application id for matching`

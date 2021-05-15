@@ -62,7 +62,7 @@ export const handle: APIGatewayProxyHandler = async (event) => {
         logger.debug({ user, request }, `No application for matching`);
         return responses.BadRequest;
       }
-      if (!user.applications.includes(request.application)) {
+      if (user.application !== request.application) {
         logger.debug({ user, request }, `Invalid application id for matching`);
         return responses.BadRequest;
       }

@@ -39,13 +39,10 @@ export const handle: APIGatewayProxyHandler = async (event) => {
   }
   logger.debug({ authorization }, `Authorization`);
 
-  const { name, email, applications } = authorization;
+  const { name, email, application } = authorization;
   const installedAppIds = await getAppIds();
-  const supportedAppIds = applications.filter((id) =>
-    installedAppIds.includes(id)
-  );
-  if (supportedAppIds.length === 0) {
-    logger.debug({ email, applications }, `No supported applications`);
+  if (!installedAppIds.includes(application)) {
+    logger.debug({ email, application }, `No supported applications`);
     return responses.BadRequest;
   }
 
@@ -54,7 +51,7 @@ export const handle: APIGatewayProxyHandler = async (event) => {
     name,
     email,
     connectionId,
-    applications: supportedAppIds,
+    application,
   };
   logger.info({ user }, `Setup a new user`);
 

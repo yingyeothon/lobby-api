@@ -14,11 +14,7 @@ export default async function deregisterFromPool({
 }: DeregisterEnvironment): Promise<unknown> {
   const { connectionId } = user;
   return Promise.all([
-    ...user.applications.map((appId) =>
-      srem(redisKeys.matchingPool(appId), connectionId)
-    ),
-    ...user.applications.map((appId) =>
-      del(redisKeys.matchingTime(appId, connectionId))
-    ),
+    srem(redisKeys.matchingPool(user.application), connectionId),
+    del(redisKeys.matchingTime(user.application, connectionId)),
   ]);
 }

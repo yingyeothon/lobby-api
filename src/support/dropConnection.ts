@@ -1,10 +1,12 @@
+import { ApiGatewayManagementApi } from "aws-sdk";
 import env from "../model/env";
-import { newApiGatewayManagementApi } from "@yingyeothon/aws-apigateway-management-api";
+
+const apigw = new ApiGatewayManagementApi({
+  endpoint: env.isOffline ? `http://localhost:3001` : env.webSocketEndpoint,
+});
 
 export default function dropConnection(connectionId: string): Promise<unknown> {
-  return newApiGatewayManagementApi({
-    endpoint: env.isOffline ? `http://localhost:3001` : env.webSocketEndpoint,
-  })
+  return apigw
     .deleteConnection({
       ConnectionId: connectionId,
     })

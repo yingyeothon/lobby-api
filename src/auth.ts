@@ -8,6 +8,13 @@ import { getLogger } from "@yingyeothon/slack-logger";
 const jwtSecretKey = env.jwtSecretKey;
 const logger = getLogger("handle:auth", __filename);
 
+interface AuthorizationWithLegacy {
+  name: string;
+  email: string;
+  application?: string; // From new issuer
+  applications?: string[]; // From old issuer
+}
+
 export function decodeJWT(
   authorizationToken: string | undefined
 ): [boolean, Authorization | undefined] {
@@ -19,12 +26,29 @@ export function decodeJWT(
     return [false, undefined];
   }
   try {
-    const payload = jwt.verify(token, jwtSecretKey) as Authorization;
-    return [true, payload];
+    const payload = jwt.verify(token, jwtSecretKey) as AuthorizationWithLegacy;
+    return [true, translateAuthorization(payload)];
   } catch (error) {
     logger.warn({ authorizationToken, error }, `Invalid JWT`);
     return [false, undefined];
   }
+}
+
+function translateAuthorization({
+  name,
+  email,
+  application,
+  applications,
+}: AuthorizationWithLegacy): Authorization {
+  return {
+    name,
+    email,
+    application: application ?? (applications ?? [])[0] ?? "",
+  };
+}
+
+interface AuthorizerContext {
+  [key: string]: string;
 }
 
 export const handle: APIGatewayAuthorizerHandler = async (event) => {
@@ -46,12 +70,8 @@ export const handle: APIGatewayAuthorizerHandler = async (event) => {
       ],
     },
     context: context
-      ? {
-          name: context.name,
-          email: context.email,
-          application: context.applications[0],
-          applications: context.applications.join("+"),
-        }
+      ? // Sadly, TypeScript doesn't support to cast from Authorization to {[key: string]: string}.
+        ((translateAuthorization(context) as unknown) as AuthorizerContext)
       : null,
   };
   logger.info({ policy, token }, `auth`);

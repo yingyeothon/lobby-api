@@ -19,7 +19,7 @@ const newUser = (index: number): User => ({
   name: `test-${index}`,
   connectionId: `test-connection-${index}`,
   email: `unknown-${index}@doma.in`,
-  applications: [app.id],
+  application: app.id,
   userId: `user-${index}`,
 });
 

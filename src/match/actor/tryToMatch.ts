@@ -1,10 +1,9 @@
-import * as pLimit from "p-limit";
-
 import matchGame, { MatchGameEnvironment } from "./matchGame";
 
 import MatchProperty from "./env/property";
 import User from "../../model/User";
 import { getLogger } from "@yingyeothon/slack-logger";
+import pLimit from "p-limit";
 
 export type MatchEnvironment = Pick<MatchProperty, "app"> &
   MatchGameEnvironment;

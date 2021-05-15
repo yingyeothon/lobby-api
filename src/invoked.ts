@@ -7,15 +7,18 @@ import useRedis from "./redis/useRedis";
 const logger = getLogger("handle:invoked", __filename);
 
 export const handle: APIGatewayProxyHandler = async (event) => {
-  const pathParameters = event.pathParameters ?? {};
-  if (!("appId" in pathParameters)) {
-    return { statusCode: 404, body: "NotFound" };
-  }
-  if (!("gameId" in pathParameters)) {
+  if (!event.pathParameters) {
     return { statusCode: 404, body: "NotFound" };
   }
 
-  const { appId, gameId } = pathParameters;
+  const { appId, gameId } = event.pathParameters;
+  if (!appId) {
+    return { statusCode: 404, body: "NotFound" };
+  }
+  if (!gameId) {
+    return { statusCode: 404, body: "NotFound" };
+  }
+
   logger.info({ appId, gameId }, "Start to mark a game as invoked");
 
   const resolved = await useRedis((connection) =>
