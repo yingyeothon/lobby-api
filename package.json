@@ -15,7 +15,7 @@
     "@yingyeothon/actor-system-redis-support": "^0.3.0",
     "@yingyeothon/naive-redis": "^0.3.2",
     "@yingyeothon/slack-logger": "^1.0.1",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "mem": "^8.1.1",
     "p-limit": "^3.1.0",
     "p-memoize": "^4.0.1",
